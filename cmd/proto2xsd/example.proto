@@ -1,0 +1,16 @@
+syntax = "proto";
+
+message Book {
+    string title = 1;
+    repeated Chapter chapters = 2;
+}
+
+message Chapter {
+    string title = 1;
+    repeated Section sections = 2;
+}
+
+message Section {
+    string title = 1;
+    string text = 2;
+}
