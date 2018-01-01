@@ -28,6 +28,5 @@ func columnsPrintables(c *proto.Comment) (list []columnsPrintable) {
 }
 
 func typeAssertColumnsPrintable(v proto.Visitee) (columnsPrintable, bool) {
-	p := asColumnsPrintable(v)
-	return p, len(p.columns()) > 0
+	return asColumnsPrintable(v), len(asColumnsPrintable(v).columns()) > 0
 }

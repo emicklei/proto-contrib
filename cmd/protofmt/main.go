@@ -33,6 +33,7 @@ import (
 	"io/ioutil"
 
 	"github.com/emicklei/proto"
+	"github.com/emicklei/proto-contrib/pkg/protofmt"
 )
 
 var (
@@ -89,9 +90,6 @@ func format(filename string, input io.Reader, output io.Writer) error {
 	if err != nil {
 		return err
 	}
-	// if *oDebug {
-	// 	spew.Dump(def)
-	// }
-	proto.NewFormatter(output, "  ").Format(def) // 2 spaces
+	protofmt.NewFormatter(output, "  ").Format(def) // 2 spaces
 	return nil
 }

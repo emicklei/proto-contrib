@@ -116,9 +116,9 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
     option (google.api.http) = {
       post: "/v1/finders/1"
       body: "*"
-	};
-
-  };
+    };
+  
+  }
 }
 `
 	p := newParserOn(src)
