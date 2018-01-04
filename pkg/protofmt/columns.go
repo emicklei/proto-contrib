@@ -181,12 +181,12 @@ func (p *columnsPrinter) VisitRPC(r *proto.RPC) {
 	p.cols = append(p.cols,
 		leftAligned(r.ReturnsType),
 		leftAligned(")"))
-	if len(r.Options) > 0 {
+	if len(r.Elements) > 0 {
 		buf := new(bytes.Buffer)
 		io.WriteString(buf, " {\n")
 		f := NewFormatter(buf, "  ") // TODO get separator, now 2 spaces
 		f.level(1)
-		for _, each := range r.Options {
+		for _, each := range r.Elements {
 			each.Accept(f)
 			io.WriteString(buf, "\n")
 		}
