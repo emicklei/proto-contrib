@@ -1,4 +1,4 @@
-package main
+package proto2gql
 
 import (
 	"io"
@@ -9,6 +9,8 @@ import (
 )
 
 type (
+	Filter = func(typeName string) bool
+
 	ExternalPackage struct {
 		url      string
 		resolved bool
@@ -20,8 +22,13 @@ type (
 		imports    map[string]*ExternalPackage
 		pkgAliases map[string]string
 		noPrefix   bool
+		filter     Filter
 	}
 )
+
+func bypassFilter(_ string) bool {
+	return true
+}
 
 func NewTransformer(out io.Writer, opts ...func(transformer *Transformer)) *Transformer {
 	res := &Transformer{
@@ -30,6 +37,7 @@ func NewTransformer(out io.Writer, opts ...func(transformer *Transformer)) *Tran
 		make(map[string]*ExternalPackage),
 		make(map[string]string),
 		false,
+		bypassFilter,
 	}
 
 	for _, opt := range opts {
@@ -61,6 +69,12 @@ func (t *Transformer) SetFilename(filename string) {
 	t.filename = filename
 }
 
+func (t *Transformer) SetFilter(filter Filter) {
+	if filter != nil {
+		t.filter = filter
+	}
+}
+
 func (t *Transformer) Transform(input io.Reader) error {
 	parser := proto.NewParser(input)
 	parser.Filename(t.filename)
@@ -74,7 +88,7 @@ func (t *Transformer) Transform(input io.Reader) error {
 	visitor := NewVisitor(&Converter{
 		noPrefix:   t.noPrefix,
 		pkgAliases: t.pkgAliases,
-	})
+	}, t.filter)
 
 	toDownload := make(map[string]*ExternalPackage)
 

@@ -1,7 +1,9 @@
-package main
+package proto2gql_test
 
 import (
 	"bytes"
+	"github.com/emicklei/proto-contrib/pkg/proto2gql"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -33,7 +35,7 @@ func TestTransformBasicMessage(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -98,7 +100,7 @@ func TestTransformNestedMessages(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -161,7 +163,7 @@ message SomeOtherMessage {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -212,7 +214,7 @@ message SearchResponse {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -260,7 +262,7 @@ func TestTransformNestedTypes(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -308,7 +310,7 @@ func TestTransformEnums(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -355,7 +357,7 @@ func TestTransformNestedEnums(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -399,7 +401,7 @@ func TestTransformImportedTypes(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -436,7 +438,7 @@ func TestTransformImportedNestedTypes(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -473,7 +475,7 @@ func TestTransformImportedTypesFromSamePackage(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	if err := transformer.Transform(input); err != nil {
 		t.Fatal(err)
@@ -510,7 +512,7 @@ func TestTransformResolveImportedTypes(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 
 	transformer.Import("google/protobuf/timestamp.proto", "https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/timestamp.proto")
 
@@ -567,7 +569,7 @@ func TestTransformWithNoTypePrefix(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 	transformer.DisablePrefix(true)
 	transformer.Import("google/protobuf/timestamp.proto", "https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/timestamp.proto")
 
@@ -639,7 +641,7 @@ func TestTransformWithPackageAliases(t *testing.T) {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 	transformer.SetPackageAlias("test", "Dashboard")
 	transformer.SetPackageAlias("google.protobuf", "")
 	transformer.Import("google/protobuf/timestamp.proto", "https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/timestamp.proto")
@@ -710,7 +712,7 @@ message Contact {
 	input.Write(schema)
 
 	output := new(bytes.Buffer)
-	transformer := NewTransformer(output)
+	transformer := proto2gql.NewTransformer(output)
 	transformer.SetPackageAlias("com.users.api", "User")
 
 	if err := transformer.Transform(input); err != nil {
@@ -737,6 +739,252 @@ type UserContact {
 }
 
 	`
+
+	expected = strings.TrimSpace(expected)
+	actual := strings.TrimSpace(output.String())
+
+	if expected != actual {
+		t.Fatalf("Expected %s to equal to %s", expected, actual)
+	}
+}
+
+func TestTransformWithSimpleFiltering(t *testing.T) {
+	schema := []byte(`
+syntax = "proto3";
+package test;
+
+message A {
+    string name = 1; 
+}
+
+message B {
+    string name = 1; 
+}
+	`)
+
+	input := new(bytes.Buffer)
+	input.Write(schema)
+
+	output := new(bytes.Buffer)
+	transformer := proto2gql.NewTransformer(output)
+
+	transformer.SetFilter(func(typeName string) bool {
+		return typeName != "test.B"
+	})
+
+	if err := transformer.Transform(input); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := `
+type TestA {
+    name: String
+}
+	`
+
+	expected = strings.TrimSpace(expected)
+	actual := strings.TrimSpace(output.String())
+
+	if expected != actual {
+		t.Fatalf("Expected %s to equal to %s", expected, actual)
+	}
+}
+
+func TestTransformWithNestedFiltering(t *testing.T) {
+	schema := []byte(`
+syntax = "proto3";
+package test;
+
+message A {
+    string name = 1; 
+
+	message B {
+		string name = 1; 
+	}
+}
+	`)
+
+	input := new(bytes.Buffer)
+	input.Write(schema)
+
+	output := new(bytes.Buffer)
+	transformer := proto2gql.NewTransformer(output)
+
+	transformer.SetFilter(func(typeName string) bool {
+		return typeName != "test.A.B"
+	})
+
+	if err := transformer.Transform(input); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := `
+type TestA {
+    name: String
+}
+	`
+
+	expected = strings.TrimSpace(expected)
+	actual := strings.TrimSpace(output.String())
+
+	if expected != actual {
+		t.Fatalf("Expected %s to equal to %s", expected, actual)
+	}
+}
+
+func TestTransformFieldFiltering(t *testing.T) {
+	schema := []byte(`
+		syntax = "proto3";
+		package my.app;
+
+		message A {
+			int64 field_int64 = 1;
+		}
+
+		message B {
+			A field_a = 1;
+		}
+
+		message C {
+			repeated B field_b = 1;
+			string field_str = 2;
+		}
+	`)
+
+	input := new(bytes.Buffer)
+	input.Write(schema)
+
+	output := new(bytes.Buffer)
+	transformer := proto2gql.NewTransformer(output)
+
+	transformer.SetFilter(func(typeName string) bool {
+		return typeName != "my.app.B"
+	})
+
+	if err := transformer.Transform(input); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := `
+type MyAppA {
+    field_int64: Int
+}
+
+type MyAppC {
+    field_str: String
+}
+`
+
+	expected = strings.TrimSpace(expected)
+	actual := strings.TrimSpace(output.String())
+
+	if expected != actual {
+		t.Fatalf("Expected %s to equal to %s", expected, actual)
+	}
+}
+
+func TestTransformExternalFieldFiltering(t *testing.T) {
+	schema := []byte(`
+		syntax = "proto3";
+		package test;
+
+		import "google/protobuf/timestamp.proto";
+
+		message Timestamp {
+		  	google.protobuf.Timestamp time = 1;
+		}
+
+		message A {
+			int64 field_int64 = 1;
+		}
+
+		message B {
+			google.protobuf.Timestamp timestamp = 1;
+			string field_str = 2;
+		}
+	`)
+
+	input := new(bytes.Buffer)
+	input.Write(schema)
+
+	output := new(bytes.Buffer)
+	transformer := proto2gql.NewTransformer(output)
+
+	transformer.SetFilter(func(typeName string) bool {
+		return typeName != "google.protobuf.Timestamp"
+	})
+
+	if err := transformer.Transform(input); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := `
+type TestTimestamp {
+}
+
+type TestA {
+    field_int64: Int
+}
+
+type TestB {
+    field_str: String
+}
+`
+
+	expected = strings.TrimSpace(expected)
+	actual := strings.TrimSpace(output.String())
+
+	if expected != actual {
+		t.Fatalf("Expected %s to equal to %s", expected, actual)
+	}
+}
+
+func TestTransformFilterByRegexp(t *testing.T) {
+	schema := []byte(`
+syntax = "proto3";
+package my.app;
+
+message User {
+	string first_name = 1;
+	string last_name = 2;
+}
+
+message GetUserRequest {
+    string correlation_id = 1;
+    string id = 2;
+}
+
+message GetUserResponse {
+    User data = 1;
+}
+
+`)
+
+	input := new(bytes.Buffer)
+	input.Write(schema)
+
+	output := new(bytes.Buffer)
+	transformer := proto2gql.NewTransformer(output)
+
+	r := regexp.MustCompile("(Request)|(Response)")
+
+	transformer.SetFilter(func(typeName string) bool {
+		return r.Match([]byte(typeName))
+	})
+
+	if err := transformer.Transform(input); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := `
+type MyAppGetUserRequest {
+    correlation_id: String
+    id: String
+}
+
+type MyAppGetUserResponse {
+}
+`
 
 	expected = strings.TrimSpace(expected)
 	actual := strings.TrimSpace(output.String())

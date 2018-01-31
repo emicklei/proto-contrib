@@ -3,7 +3,10 @@
 default: test compile
 
 compile:
-	go build -v -o ./proto2gql ./*.go
+	go build -v -o ../../bin/proto2gql ./main.go
+
+fmt:
+	go fmt ./*.go
 
 test:
 	go test ./*.go

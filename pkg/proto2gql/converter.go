@@ -1,14 +1,14 @@
-package main
+package proto2gql
 
 import "strings"
 
 type Converter struct {
-	noPrefix bool
+	noPrefix   bool
 	pkgAliases map[string]string
 }
 
 func (c *Converter) NewTypeName(scope *Scope, name string) string {
-	return scope.packageName + strings.Join(scope.path, "") + name
+	return scope.convertedPackageName + strings.Join(scope.path, "") + name
 }
 
 func (c *Converter) OriginalTypeName(scope *Scope, name string) string {
@@ -19,6 +19,15 @@ func (c *Converter) OriginalTypeName(scope *Scope, name string) string {
 		return scope.path[0] + "." + name
 	default:
 		return strings.Join(scope.path, ".") + "." + name
+	}
+}
+
+func (c *Converter) OriginalFullTypeName(scope *Scope, name string) string {
+	switch len(scope.path) {
+	case 0:
+		return scope.originalPackageName + "." + name
+	default:
+		return scope.originalPackageName + "." + strings.Join(scope.path, ".") + "." + name
 	}
 }
 
