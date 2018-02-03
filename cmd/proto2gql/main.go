@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/emicklei/proto-contrib/pkg/proto2gql"
 	"github.com/emicklei/proto-contrib/pkg/proto2gql/writers"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -117,7 +117,7 @@ func main() {
 	}
 
 	if len(ws) == 0 {
-		fmt.Println("output not defined")
+		log.Println("output not defined")
 		os.Exit(0)
 	}
 
@@ -129,21 +129,14 @@ func main() {
 		withFilter(filter, filterN),
 	)
 
-	var err error
-
 	for _, filename := range flag.Args() {
-		if err = readAndTransform(filename, transformer); err != nil {
-			fmt.Println(err.Error())
-			break
+		if err := readAndTransform(filename, transformer); err != nil {
+			log.Fatalln("failed to transform file: " + err.Error())
 		}
 	}
 
-	if saveErr := saveWriters(ws); saveErr != nil && err == nil {
-		err = saveErr
-	}
-
-	if err != nil {
-		os.Exit(1)
+	if err := saveWriters(ws); err != nil {
+		log.Fatalln("failed to save output: " + err.Error())
 	}
 }
 
@@ -181,7 +174,7 @@ func withFilter(positive, negative string) func(transformer *proto2gql.Transform
 			rPos, err := regexp.Compile(positive)
 
 			if err != nil {
-				panic("invalid regular expression: " + err.Error())
+				log.Fatalln("invalid regular expression: " + err.Error())
 			}
 
 			chain = append(chain, func(typeName string) bool {
@@ -270,7 +263,7 @@ func saveWriters(ws []io.Writer) error {
 				err = fw.Save()
 
 				if err != nil {
-					fmt.Println(err.Error())
+					break
 				}
 			} else {
 				fw.Remove()
@@ -290,8 +283,7 @@ func gracefullyTerminate(err error, ws []io.Writer) {
 		}
 	}
 
-	fmt.Println("error occured: " + err.Error())
-	os.Exit(1)
+	log.Fatalln("error occurred: " + err.Error())
 }
 
 func readAndTransform(filename string, transformer *proto2gql.Transformer) error {

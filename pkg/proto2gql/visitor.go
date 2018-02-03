@@ -67,7 +67,7 @@ func (v *Visitor) Flush(out io.Writer) {
 }
 
 func (v *Visitor) VisitMessage(m *proto.Message) {
-	// we add it any way just to bea ble to resolve it in fields
+	// we add it to be able to resolve it in fields
 	v.scope.AddLocalType(m.Name)
 
 	if v.canTransformMessage(m) == false {
@@ -140,7 +140,7 @@ func (v *Visitor) VisitEnumField(i *proto.EnumField) {
 	v.buff.WriteString("    " + i.Name + "\n")
 }
 func (v *Visitor) VisitEnum(e *proto.Enum) {
-	// we add it any way just to bea ble to resolve it in fields
+	// we add it to be able to resolve it in fields
 	v.scope.AddLocalType(e.Name)
 
 	if v.canTransformEnum(e) == false {
