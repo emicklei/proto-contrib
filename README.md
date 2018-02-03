@@ -24,19 +24,23 @@ See folder `cmd/proto2xsd/README.md` for more details.
 	> proto2gql -help
 	    Usage of proto2gql [flags] [path ...]
 
-        -std_out
-            Writes transformed files to stdout
-        -txt_out string
-            Writes transformed files to .graphql file
+        -filter string
+            Regexp to filter out matched types
+        -filterN string
+            Regexp to filter out not matched types
         -go_out string
             Writes transformed files to .go file
         -js_out string
             Writes transformed files to .js file
+        -no_prefix
+            Disables package prefix for type names
         -package_alias value
             Renames packages using given aliases
         -resolve_import value
             Resolves given external packages
-        -no_prefix
-            Disables package prefix for type names
+        -std_out
+            Writes transformed files to stdout
+        -txt_out string
+            Writes transformed files to .graphql file
 
 See folder `cmd/proto2gql/README.md` for more details.

@@ -1,9 +1,10 @@
-package main
+package proto2gql
 
 import (
 	"bytes"
 	"github.com/emicklei/proto"
 	"io"
+	"strings"
 )
 
 var BUILTINS = map[string]string{
@@ -29,14 +30,16 @@ type (
 		scope    *Scope
 		buff     *bytes.Buffer
 		children []*Visitor
+		filter   Filter
 	}
 )
 
-func NewVisitor(converter *Converter) *Visitor {
+func NewVisitor(converter *Converter, filter Filter) *Visitor {
 	return &Visitor{
 		buff:     new(bytes.Buffer),
 		children: make([]*Visitor, 0, 5),
 		scope:    NewScope(converter),
+		filter:   filter,
 	}
 }
 
@@ -45,6 +48,7 @@ func (v *Visitor) Fork(name string) *Visitor {
 		buff:     new(bytes.Buffer),
 		children: make([]*Visitor, 0, 5),
 		scope:    v.scope.Fork(name),
+		filter:   v.filter,
 	}
 
 	v.children = append(v.children, child)
@@ -63,9 +67,14 @@ func (v *Visitor) Flush(out io.Writer) {
 }
 
 func (v *Visitor) VisitMessage(m *proto.Message) {
-	v.buff.WriteString("\n")
-
+	// we add it to be able to resolve it in fields
 	v.scope.AddLocalType(m.Name)
+
+	if v.canTransformMessage(m) == false {
+		return
+	}
+
+	v.buff.WriteString("\n")
 
 	v.buff.WriteString("type " + v.scope.converter.NewTypeName(v.scope, m.Name) + " {\n")
 
@@ -82,8 +91,8 @@ func (v *Visitor) VisitMessage(m *proto.Message) {
 			fields = append(fields, field)
 		} else {
 			// if so, create a nested visitor
-			// we need to track a parent's name
-			// in order to generate a unique name for nested ones
+			// we need to track a parent's convertedName
+			// in order to generate a unique convertedName for nested ones
 			// we create another visitor in order to unfold nested types since GraphQL does not support nested types
 			element.Accept(v.Fork(m.Name))
 		}
@@ -107,9 +116,13 @@ func (v *Visitor) VisitImport(i *proto.Import) {
 	v.scope.AddImportedType(i.Filename)
 }
 func (v *Visitor) VisitNormalField(field *proto.NormalField) {
+	if v.canTransformMessageField(field) == false {
+		return
+	}
+
 	v.buff.WriteString("    " + field.Name + ":")
 
-	typeName := v.scope.ResolveTypeName(field.Type)
+	typeName := v.scope.ResolveConvertedTypeName(field.Type)
 
 	if field.Repeated == false {
 		v.buff.WriteString(" " + typeName)
@@ -127,7 +140,12 @@ func (v *Visitor) VisitEnumField(i *proto.EnumField) {
 	v.buff.WriteString("    " + i.Name + "\n")
 }
 func (v *Visitor) VisitEnum(e *proto.Enum) {
+	// we add it to be able to resolve it in fields
 	v.scope.AddLocalType(e.Name)
+
+	if v.canTransformEnum(e) == false {
+		return
+	}
 
 	v.buff.WriteString("\n")
 
@@ -149,3 +167,26 @@ func (v *Visitor) VisitMapField(f *proto.MapField)     {}
 // proto2
 func (v *Visitor) VisitGroup(g *proto.Group)           {}
 func (v *Visitor) VisitExtensions(e *proto.Extensions) {}
+
+func (v *Visitor) canTransformMessage(m *proto.Message) bool {
+	return v.filter(v.scope.converter.OriginalFullTypeName(v.scope, m.Name))
+}
+
+func (v *Visitor) canTransformMessageField(m *proto.NormalField) bool {
+	// ignore builtins
+	_, builtin := BUILTINS[m.Type]
+
+	if builtin == true {
+		return true
+	}
+
+	if strings.Contains(m.Type, ".") {
+		return v.filter(m.Type)
+	}
+
+	return v.filter(v.scope.ResolveFullTypeName(m.Type))
+}
+
+func (v *Visitor) canTransformEnum(e *proto.Enum) bool {
+	return v.filter(v.scope.converter.OriginalFullTypeName(v.scope, e.Name))
+}

@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"github.com/emicklei/proto-contrib/pkg/proto2gql"
+	"github.com/emicklei/proto-contrib/pkg/proto2gql/writers"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -48,6 +51,10 @@ var (
 
 	packageAliases StringMap
 
+	filter string
+
+	filterN string
+
 	noPrefix bool
 )
 
@@ -61,6 +68,8 @@ func main() {
 	flag.StringVar(&jsOut, "js_out", "", "Writes transformed files to .js file")
 	flag.Var(&resolveImports, "resolve_import", "Resolves given external packages")
 	flag.Var(&packageAliases, "package_alias", "Renames packages using given aliases")
+	flag.StringVar(&filter, "filter", "", "Regexp to filter out matched custom types")
+	flag.StringVar(&filterN, "filterN", "", "Regexp to filter out not matched custom types")
 	flag.BoolVar(&noPrefix, "no_prefix", false, "Disables package prefix for type names")
 
 	flag.Parse()
@@ -70,92 +79,136 @@ func main() {
 		os.Exit(0)
 	}
 
-	var transformer *Transformer
-	writers := make([]io.Writer, 0, 5)
+	var transformer *proto2gql.Transformer
+	ws := make([]io.Writer, 0, 5)
 
 	if stdOut == true {
-		writers = append(writers, os.Stdout)
+		ws = append(ws, os.Stdout)
 	}
 
 	if txtOut != "" {
 		writer, err := createTextWriter(txtOut)
 
 		if err != nil {
-			gracefullyTerminate(err, writers)
+			gracefullyTerminate(err, ws)
 		}
 
-		writers = append(writers, writer)
+		ws = append(ws, writer)
 	}
 
 	if goOut != "" {
 		writer, err := createGoWriter(goOut)
 
 		if err != nil {
-			gracefullyTerminate(err, writers)
+			gracefullyTerminate(err, ws)
 		}
 
-		writers = append(writers, writer)
+		ws = append(ws, writer)
 	}
 
 	if jsOut != "" {
 		writer, err := createJsWriter(jsOut)
 
 		if err != nil {
-			gracefullyTerminate(err, writers)
+			gracefullyTerminate(err, ws)
 		}
 
-		writers = append(writers, writer)
+		ws = append(ws, writer)
 	}
 
-	if len(writers) == 0 {
-		fmt.Println("output not defined")
+	if len(ws) == 0 {
+		log.Println("output not defined")
 		os.Exit(0)
 	}
 
-	transformer = NewTransformer(
-		io.MultiWriter(writers...),
+	transformer = proto2gql.NewTransformer(
+		io.MultiWriter(ws...),
 		withResolvingImports(resolveImports),
 		withPackageAliases(packageAliases),
 		withNoPrefix(noPrefix),
+		withFilter(filter, filterN),
 	)
 
-	var err error
-
 	for _, filename := range flag.Args() {
-		if err = readAndTransform(filename, transformer); err != nil {
-			fmt.Println(err.Error())
-			break
+		if err := readAndTransform(filename, transformer); err != nil {
+			log.Fatalln("failed to transform file: " + err.Error())
 		}
 	}
 
-	if saveErr := saveWriters(writers); saveErr != nil && err == nil {
-		err = saveErr
-	}
-
-	if err != nil {
-		os.Exit(1)
+	if err := saveWriters(ws); err != nil {
+		log.Fatalln("failed to save output: " + err.Error())
 	}
 }
 
-func withResolvingImports(imports StringMap) func(transformer *Transformer) {
-	return func(t *Transformer) {
+func withResolvingImports(imports StringMap) func(transformer *proto2gql.Transformer) {
+	return func(t *proto2gql.Transformer) {
 		for key, url := range imports {
 			t.Import(key, url)
 		}
 	}
 }
 
-func withPackageAliases(aliases StringMap) func(transformer *Transformer) {
-	return func(t *Transformer) {
+func withPackageAliases(aliases StringMap) func(transformer *proto2gql.Transformer) {
+	return func(t *proto2gql.Transformer) {
 		for pkg, alias := range aliases {
 			t.SetPackageAlias(pkg, alias)
 		}
 	}
 }
 
-func withNoPrefix(noPrefix bool) func(transformer *Transformer) {
-	return func(t *Transformer) {
+func withNoPrefix(noPrefix bool) func(transformer *proto2gql.Transformer) {
+	return func(t *proto2gql.Transformer) {
 		t.DisablePrefix(noPrefix)
+	}
+}
+
+func withFilter(positive, negative string) func(transformer *proto2gql.Transformer) {
+	return func(t *proto2gql.Transformer) {
+		if positive == "" && negative == "" {
+			return
+		}
+
+		chain := make([]func(typeName string) bool, 0, 2)
+
+		if positive != "" {
+			rPos, err := regexp.Compile(positive)
+
+			if err != nil {
+				log.Fatalln("invalid regular expression: " + err.Error())
+			}
+
+			chain = append(chain, func(typeName string) bool {
+				// filter out matched types
+				return rPos.Match([]byte(typeName)) == false
+			})
+		}
+
+		if negative != "" {
+			rNeg, err := regexp.Compile(negative)
+
+			if err != nil {
+				panic("invalid regular expression: " + err.Error())
+			}
+
+			chain = append(chain, func(typeName string) bool {
+				// filter out not matched types
+				return rNeg.Match([]byte(typeName))
+			})
+		}
+
+		t.SetFilter(func(typeName string) bool {
+			res := true
+
+			for _, r := range chain {
+				res = r(typeName)
+
+				if res == false {
+					break
+				}
+			}
+
+			return res
+		})
 	}
 }
 
@@ -174,7 +227,7 @@ func ensureExtension(filename, expectedExt string) string {
 }
 
 func createTextWriter(filename string) (io.Writer, error) {
-	return NewFileWriter(ensureExtension(filename, ".graphql"), "", "")
+	return writers.NewFileWriter(ensureExtension(filename, ".graphql"), "", "")
 }
 
 func createGoWriter(filename string) (io.Writer, error) {
@@ -190,27 +243,27 @@ func createGoWriter(filename string) (io.Writer, error) {
 	openTag := "package " + filepath.Base(filepath.Dir(abs)) + "\n \n"
 	openTag += "var " + strings.Title(name) + " = `\n"
 
-	return NewFileWriter(filename, openTag, "\n`")
+	return writers.NewFileWriter(filename, openTag, "\n`")
 }
 
 func createJsWriter(filename string) (io.Writer, error) {
 	openTag := "module.exports = `\n"
 
-	return NewFileWriter(ensureExtension(filename, ".js"), openTag, "\n`")
+	return writers.NewFileWriter(ensureExtension(filename, ".js"), openTag, "\n`")
 }
 
-func saveWriters(writers []io.Writer) error {
+func saveWriters(ws []io.Writer) error {
 	var err error
 
-	for _, writer := range writers {
-		fw, ok := writer.(*FileWriter)
+	for _, writer := range ws {
+		fw, ok := writer.(*writers.FileWriter)
 
 		if ok == true {
 			if err == nil {
 				err = fw.Save()
 
 				if err != nil {
-					fmt.Println(err.Error())
+					break
 				}
 			} else {
 				fw.Remove()
@@ -221,20 +274,19 @@ func saveWriters(writers []io.Writer) error {
 	return err
 }
 
-func gracefullyTerminate(err error, writers []io.Writer) {
-	for _, writer := range writers {
-		fw, ok := writer.(*FileWriter)
+func gracefullyTerminate(err error, ws []io.Writer) {
+	for _, writer := range ws {
+		fw, ok := writer.(*writers.FileWriter)
 
 		if ok == true {
 			fw.Remove()
 		}
 	}
 
-	fmt.Println("error occured: " + err.Error())
-	os.Exit(1)
+	log.Fatalln("error occurred: " + err.Error())
 }
 
-func readAndTransform(filename string, transformer *Transformer) error {
+func readAndTransform(filename string, transformer *proto2gql.Transformer) error {
 	// open for read
 	file, err := os.Open(filename)
 

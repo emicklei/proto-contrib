@@ -1,8 +1,8 @@
-package main
+package writers
 
 import (
-	"os"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
