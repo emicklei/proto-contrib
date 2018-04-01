@@ -96,7 +96,7 @@ func (f *Formatter) VisitMessage(m *proto.Message) {
 		f.printAsGroups(m.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n")
+	io.WriteString(f.w, "}\n\n")
 	f.end("message")
 }
 
@@ -140,7 +140,7 @@ func (f *Formatter) VisitService(s *proto.Service) {
 		f.printAsGroups(s.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n")
+	io.WriteString(f.w, "}\n\n")
 	f.end("service")
 }
 

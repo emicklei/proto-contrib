@@ -94,6 +94,9 @@ func (p *columnsPrinter) VisitImport(i *proto.Import) {
 		p.cols = append(p.cols, notAligned(" //"), notAligned(i.InlineComment.Message()))
 	}
 }
+
+// VisitNormalField
+// [|repeated][|optional][space][name][equals][sequence][|option]
 func (p *columnsPrinter) VisitNormalField(f *proto.NormalField) {
 	if f.Repeated {
 		p.cols = append(p.cols, leftAligned("repeated "))
@@ -202,12 +205,17 @@ func (p *columnsPrinter) VisitRPC(r *proto.RPC) {
 }
 func (p *columnsPrinter) VisitMapField(f *proto.MapField) {
 	p.cols = append(p.cols,
-		notAligned("map <"),
-		rightAligned(f.KeyType),
-		notAligned(","),
-		leftAligned(f.Type),
-		notAligned("> "),
-		rightAligned(f.Name),
+		alignedEmpty, // no repeated
+		alignedEmpty, // no optional
+		rightAligned(fmt.Sprintf("map <%s,%s>", f.KeyType, f.Type)),
+		alignedSpace,
+		leftAligned(f.Name),
+		// notAligned("map <"),
+		// rightAligned(f.KeyType),
+		// notAligned(","),
+		// leftAligned(f.Type),
+		// notAligned("> "),
+		// rightAligned(f.Name),
 		alignedEquals,
 		rightAligned(strconv.Itoa(f.Sequence)))
 	if len(f.Options) > 0 {

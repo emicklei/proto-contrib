@@ -47,7 +47,7 @@ func (r *reflector) VisitOneof(o *proto.Oneof)             { r.name = "Oneof" }
 func (r *reflector) VisitOneofField(o *proto.OneOfField)   { r.name = "OneOfField" }
 func (r *reflector) VisitReserved(rs *proto.Reserved)      { r.name = "Reserved" }
 func (r *reflector) VisitRPC(rpc *proto.RPC)               { r.name = "RPC" }
-func (r *reflector) VisitMapField(f *proto.MapField)       { r.name = "MapField" }
+func (r *reflector) VisitMapField(f *proto.MapField)       { r.name = "NormalField" } // handle as
 func (r *reflector) VisitGroup(g *proto.Group)             { r.name = "Group" }
 func (r *reflector) VisitExtensions(e *proto.Extensions)   { r.name = "Extensions" }
 
