@@ -44,3 +44,16 @@ See folder `cmd/proto2xsd/README.md` for more details.
             Writes transformed files to .graphql file
 
 See folder `cmd/proto2gql/README.md` for more details.
+
+### usage of protodep command
+
+    > protodep v1/myservice.proto
+
+    v1/myservice.proto
+    v1/shared.proto
+    google/api/annotations.proto
+    google/api/http.proto
+    google/protobuf/descriptor.proto
+    google/protobuf/timestamp.proto
+
+See folder `cmd/protodep/README.md` for more details.    
