@@ -19,8 +19,10 @@ func TestMessageToRecord1(t *testing.T) {
 
 	parser := proto.NewParser(strings.NewReader(src))
 	definition, _ := parser.Parse()
+	builder := NewBuilder()
 	proto.Walk(definition, proto.WithMessage(func(m *proto.Message) {
-		r := MessageToRecord(m)
-		json.NewEncoder(os.Stdout).Encode(r)
+		builder.AddMessage(m)
 	}))
+	r := builder.Build("Test")
+	json.NewEncoder(os.Stdout).Encode(r)
 }
