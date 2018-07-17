@@ -35,15 +35,37 @@ func main() {
 	if len(os.Args) == 1 {
 		log.Fatal("missing proto file parameter")
 	}
-	root := os.Args[1]
-	list, err := allImportsOf(root, map[string]bool{})
-	if err != nil {
-		log.Fatal("failed to parse imports ", err)
+
+	overallList := []string{}
+	for i := 1; i < len(os.Args); i++ {
+		list, err := allImportsOf(os.Args[i], map[string]bool{})
+		if err != nil {
+			log.Fatal("failed to parse imports ", err)
+		}
+
+		overallList = append(overallList, os.Args[i])
+		for _, each := range list {
+			overallList = append(overallList, each.Filename)
+		}
 	}
-	fmt.Println(root)
-	for _, each := range list {
-		fmt.Println(each.Filename)
+
+	overallList = unique(overallList)
+
+	for _, each := range overallList {
+		fmt.Println(each)
 	}
+}
+
+func unique(slice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func allImportsOf(path string, visitMap map[string]bool) (list []*proto.Import, err error) {
