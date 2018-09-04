@@ -15,8 +15,8 @@ var EOM = errors.New("end of message reached")
 
 type decoder struct {
 	d       *Definitions
-	specs   map[string]*pp.Message
 	m       *pp.Message
+	p       string
 	b       *pb.Buffer
 	r       map[string]interface{}
 	verbose bool
@@ -24,6 +24,7 @@ type decoder struct {
 
 func (d *decoder) Decode(pkg, t string) (map[string]interface{}, error) {
 	m := d.d.Message(pkg, t)
+	d.p = pkg
 	if m == nil {
 		return nil, fmt.Errorf("no definition found for %s %s", pkg, t)
 	}
@@ -45,10 +46,9 @@ func (d *decoder) Decode(pkg, t string) (map[string]interface{}, error) {
 // NewDecoder is the thing
 func NewDecoder(d *Definitions, b *pb.Buffer) *decoder {
 	return &decoder{
-		d:     d,
-		specs: map[string]*pp.Message{},
-		b:     b,
-		r:     map[string]interface{}{},
+		d: d,
+		b: b,
+		r: map[string]interface{}{},
 	}
 }
 
@@ -75,69 +75,67 @@ func (d *decoder) decodeTag(tag, wire uint64) error {
 
 func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 	if "string" == f.Type {
-		// TODO  repeated
-		return d.handleString(f.Name, false)
+		return d.handleString(f.Name, f.Repeated)
 	}
 	if "int64" == f.Type {
-		// TODO  repeated
-		return d.handleInt64(f.Name, false)
+		return d.handleInt64(f.Name, f.Repeated)
 	}
 	if "int32" == f.Type {
-		// TODO  repeated
-		return d.handleInt32(f.Name, false)
+		return d.handleInt32(f.Name, f.Repeated)
 	}
 	if "float" == f.Type {
-		// TODO  repeated
-		return d.handleFloat(f.Name, false)
+		return d.handleFloat(f.Name, f.Repeated)
 	}
-	if _, ok := d.specs[f.Type]; !ok {
+	if "bool" == f.Type {
+		return d.handleBool(f.Name, f.Repeated)
+	}
+	if m := d.d.Message(d.p, f.Type); m == nil {
 		return fmt.Errorf("unknown type:%s", f.Type)
-	} else {
-		nextData, err := d.b.DecodeRawBytes(true)
-		if err != nil {
-			if io.ErrUnexpectedEOF == err {
-				return err
-			}
-			return fmt.Errorf("unable or read raw bytes of message of type:%s", f.Type)
+	}
+	nextData, err := d.b.DecodeRawBytes(true)
+	if err != nil {
+		if io.ErrUnexpectedEOF == err {
+			return err
 		}
-		sub := NewDecoder(d.d, pb.NewBuffer(nextData))
-		if f.Repeated {
-			for {
-				if d.verbose {
-					log.Println("BEGIN repeated", f.Name, ":", f.Type)
-				}
-				if _, err := sub.Decode("", f.Type); err != nil { // what package?
-					if io.ErrUnexpectedEOF == err {
-						if d.verbose {
-							log.Println("END", f.Name, ":", f.Type)
-						}
-						// TODO?????
-						d.add(f.Name, sub.r, RepeatedField, !MapField)
-						break
-					}
-					if EOM == err {
-						// TODO?????
-						d.add(f.Name, sub.r, RepeatedField, !MapField)
-						break
-					}
-					return fmt.Errorf("unable to decode repeated message of type:%v error:%v", f.Type, err)
-				}
-				d.add(f.Name, sub.r, RepeatedField, !MapField)
-			}
-		} else {
-			// single
+		return fmt.Errorf("unable or read raw bytes of message of type:%s", f.Type)
+	}
+	sub := NewDecoder(d.d, pb.NewBuffer(nextData))
+	if f.Repeated {
+		for {
 			if d.verbose {
-				log.Println("BEGIN single", f.Name, ":", f.Type)
+				log.Println("BEGIN repeated", f.Name, ":", f.Type)
 			}
-			if _, err := sub.Decode("", f.Type); err != nil { // what package
-				if io.ErrUnexpectedEOF == err || EOM == err {
+			if _, err := sub.Decode(d.p, f.Type); err != nil { // what package?
+				if io.ErrUnexpectedEOF == err {
 					if d.verbose {
 						log.Println("END", f.Name, ":", f.Type)
 					}
-					d.add(f.Name, sub.r, !RepeatedField, !MapField)
-				} else {
-					return fmt.Errorf("unable to decode single message of type:%v error:%v", f.Type, err)
+					// TODO?????
+					d.add(f.Name, sub.r, RepeatedField, !MapField)
+					break
 				}
+				if EOM == err {
+					// TODO?????
+					d.add(f.Name, sub.r, RepeatedField, !MapField)
+					break
+				}
+				return fmt.Errorf("unable to decode repeated message of type:%v error:%v", f.Type, err)
+			}
+			d.add(f.Name, sub.r, RepeatedField, !MapField)
+		}
+	} else {
+		// single
+		if d.verbose {
+			log.Println("BEGIN single", f.Name, ":", f.Type)
+		}
+		if _, err := sub.Decode(d.p, f.Type); err != nil { // what package
+			if io.ErrUnexpectedEOF == err || EOM == err {
+				if d.verbose {
+					log.Println("END", f.Name, ":", f.Type)
+				}
+				d.add(f.Name, sub.r, !RepeatedField, !MapField)
+			} else {
+				return fmt.Errorf("unable to decode single message of type:%v error:%v", f.Type, err)
 			}
 		}
 	}
@@ -226,11 +224,11 @@ func (d *decoder) decodeMapField(f *pp.MapField, wire uint64) error {
 		return fmt.Errorf("unable or read raw bytes of map of type:%s", f.Type)
 	}
 	// extend the specs TODO check for existence
-	d.specs[containerMessage.Name] = containerMessage
-	d.specs[entryMessage.Name] = entryMessage
+	d.d.AddMessage(d.p, containerMessage.Name, containerMessage)
+	d.d.AddMessage(d.p, entryMessage.Name, entryMessage)
 
 	sub := NewDecoder(d.d, pb.NewBuffer(nextData))
-	sub.Decode("", containerMessage.Name) // what package?
+	sub.Decode(d.p, containerMessage.Name) // what package?
 
 	// one of the repeated
 	result := map[string]interface{}{}
@@ -241,6 +239,22 @@ func (d *decoder) decodeMapField(f *pp.MapField, wire uint64) error {
 }
 
 func (d *decoder) handleInt64(n string, repeated bool) error {
+	if repeated {
+		data, err := d.b.DecodeRawBytes(true)
+		if err != nil {
+			return fmt.Errorf("cannot decode repeated int64 raw bytes:%v", err)
+		}
+		buf := pb.NewBuffer(data)
+		for {
+			x, err := buf.DecodeVarint()
+			if err == io.ErrUnexpectedEOF {
+				break
+			}
+			d.add(n, x, repeated, !MapField)
+		}
+		return nil
+	}
+	// non-repeated
 	x, err := d.b.DecodeVarint()
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
@@ -248,11 +262,27 @@ func (d *decoder) handleInt64(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:int64:%v", n, err)
 	}
-	d.add(n, x, repeated, !MapField)
+	d.add(n, x, !RepeatedField, !MapField)
 	return nil
 }
 
 func (d *decoder) handleInt32(n string, repeated bool) error {
+	if repeated {
+		data, err := d.b.DecodeRawBytes(true)
+		if err != nil {
+			return fmt.Errorf("cannot decode repeated int32 raw bytes:%v", err)
+		}
+		buf := pb.NewBuffer(data)
+		for {
+			x, err := buf.DecodeVarint()
+			if err == io.ErrUnexpectedEOF {
+				break
+			}
+			d.add(n, int32(x), repeated, !MapField)
+		}
+		return nil
+	}
+	// non-repeated
 	x, err := d.b.DecodeVarint()
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
@@ -260,11 +290,27 @@ func (d *decoder) handleInt32(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:int32:%v", n, err)
 	}
-	d.add(n, x, repeated, !MapField)
+	d.add(n, x, !RepeatedField, !MapField)
 	return nil
 }
 
 func (d *decoder) handleFloat(n string, repeated bool) error {
+	if repeated {
+		data, err := d.b.DecodeRawBytes(true)
+		if err != nil {
+			return fmt.Errorf("cannot decode repeated float32 raw bytes:%v", err)
+		}
+		buf := pb.NewBuffer(data)
+		for {
+			x, err := buf.DecodeFixed32()
+			if err == io.ErrUnexpectedEOF {
+				break
+			}
+			d.add(n, math.Float32frombits(uint32(x)), repeated, !MapField)
+		}
+		return nil
+	}
+	// non-repeated
 	x, err := d.b.DecodeFixed32()
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
@@ -272,11 +318,12 @@ func (d *decoder) handleFloat(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:float:%v", n, err)
 	}
-	d.add(n, math.Float32frombits(uint32(x)), repeated, !MapField)
+	d.add(n, math.Float32frombits(uint32(x)), !RepeatedField, !MapField)
 	return nil
 }
 
 func (d *decoder) handleString(n string, repeated bool) error {
+	// non-repeated and repeated
 	sb, err := d.b.DecodeStringBytes()
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
@@ -285,5 +332,18 @@ func (d *decoder) handleString(n string, repeated bool) error {
 		return fmt.Errorf("cannot decode %s:string:%v", n, err)
 	}
 	d.add(n, string(sb), repeated, !MapField)
+	return nil
+}
+
+func (d *decoder) handleBool(n string, repeated bool) error {
+	// non-repeated and repeated
+	x, err := d.b.DecodeVarint()
+	if err != nil {
+		if io.ErrUnexpectedEOF == err {
+			return err
+		}
+		return fmt.Errorf("cannot decode %s:string:%v", n, err)
+	}
+	d.add(n, x == 1, repeated, !MapField)
 	return nil
 }
