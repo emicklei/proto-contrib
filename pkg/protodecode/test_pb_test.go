@@ -19,18 +19,27 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type Test struct {
-	FieldInt32           int32    `protobuf:"varint,1,opt,name=field_int32,json=fieldInt32,proto3" json:"field_int32,omitempty"`
-	FieldString          string   `protobuf:"bytes,2,opt,name=field_string,json=fieldString,proto3" json:"field_string,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	FieldInt32  int32   `protobuf:"varint,1,opt,name=field_int32,json=fieldInt32,proto3" json:"field_int32,omitempty"`
+	FieldString string  `protobuf:"bytes,2,opt,name=field_string,json=fieldString,proto3" json:"field_string,omitempty"`
+	FieldInt64  int64   `protobuf:"varint,3,opt,name=field_int64,json=fieldInt64,proto3" json:"field_int64,omitempty"`
+	FieldFloat  float32 `protobuf:"fixed32,4,opt,name=field_float,json=fieldFloat,proto3" json:"field_float,omitempty"`
+	FieldBool   bool    `protobuf:"varint,5,opt,name=field_bool,json=fieldBool,proto3" json:"field_bool,omitempty"`
+	// repeated
+	FieldsInt32          []int32   `protobuf:"varint,31,rep,packed,name=fields_int32,json=fieldsInt32,proto3" json:"fields_int32,omitempty"`
+	FieldsString         []string  `protobuf:"bytes,32,rep,name=fields_string,json=fieldsString,proto3" json:"fields_string,omitempty"`
+	FieldsInt64          []int64   `protobuf:"varint,33,rep,packed,name=fields_int64,json=fieldsInt64,proto3" json:"fields_int64,omitempty"`
+	FieldsFloat          []float32 `protobuf:"fixed32,34,rep,packed,name=fields_float,json=fieldsFloat,proto3" json:"fields_float,omitempty"`
+	FieldsBool           []bool    `protobuf:"varint,35,rep,packed,name=fields_bool,json=fieldsBool,proto3" json:"fields_bool,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
 }
 
 func (m *Test) Reset()         { *m = Test{} }
 func (m *Test) String() string { return proto.CompactTextString(m) }
 func (*Test) ProtoMessage()    {}
 func (*Test) Descriptor() ([]byte, []int) {
-	return fileDescriptor_test_dbd775643803566f, []int{0}
+	return fileDescriptor_test_ccad7501a9b176f4, []int{0}
 }
 func (m *Test) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Test.Unmarshal(m, b)
@@ -64,19 +73,163 @@ func (m *Test) GetFieldString() string {
 	return ""
 }
 
-func init() {
-	proto.RegisterType((*Test)(nil), "protodecode.Test")
+func (m *Test) GetFieldInt64() int64 {
+	if m != nil {
+		return m.FieldInt64
+	}
+	return 0
 }
 
-func init() { proto.RegisterFile("test.proto", fileDescriptor_test_dbd775643803566f) }
+func (m *Test) GetFieldFloat() float32 {
+	if m != nil {
+		return m.FieldFloat
+	}
+	return 0
+}
 
-var fileDescriptor_test_dbd775643803566f = []byte{
-	// 110 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2a, 0x49, 0x2d, 0x2e,
-	0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x06, 0x53, 0x29, 0xa9, 0xc9, 0xf9, 0x29, 0xa9,
-	0x4a, 0x5e, 0x5c, 0x2c, 0x21, 0xa9, 0xc5, 0x25, 0x42, 0xf2, 0x5c, 0xdc, 0x69, 0x99, 0xa9, 0x39,
-	0x29, 0xf1, 0x99, 0x79, 0x25, 0xc6, 0x46, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0xac, 0x41, 0x5c, 0x60,
-	0x21, 0x4f, 0x90, 0x88, 0x90, 0x22, 0x17, 0x0f, 0x44, 0x41, 0x71, 0x49, 0x51, 0x66, 0x5e, 0xba,
-	0x04, 0x93, 0x02, 0xa3, 0x06, 0x67, 0x10, 0x44, 0x53, 0x30, 0x58, 0x28, 0x89, 0x0d, 0x6c, 0xb0,
-	0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xf0, 0x0e, 0x6b, 0x90, 0x6d, 0x00, 0x00, 0x00,
+func (m *Test) GetFieldBool() bool {
+	if m != nil {
+		return m.FieldBool
+	}
+	return false
+}
+
+func (m *Test) GetFieldsInt32() []int32 {
+	if m != nil {
+		return m.FieldsInt32
+	}
+	return nil
+}
+
+func (m *Test) GetFieldsString() []string {
+	if m != nil {
+		return m.FieldsString
+	}
+	return nil
+}
+
+func (m *Test) GetFieldsInt64() []int64 {
+	if m != nil {
+		return m.FieldsInt64
+	}
+	return nil
+}
+
+func (m *Test) GetFieldsFloat() []float32 {
+	if m != nil {
+		return m.FieldsFloat
+	}
+	return nil
+}
+
+func (m *Test) GetFieldsBool() []bool {
+	if m != nil {
+		return m.FieldsBool
+	}
+	return nil
+}
+
+type Foo struct {
+	Foo                  string   `protobuf:"bytes,1,opt,name=foo,proto3" json:"foo,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Foo) Reset()         { *m = Foo{} }
+func (m *Foo) String() string { return proto.CompactTextString(m) }
+func (*Foo) ProtoMessage()    {}
+func (*Foo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_test_ccad7501a9b176f4, []int{1}
+}
+func (m *Foo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Foo.Unmarshal(m, b)
+}
+func (m *Foo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Foo.Marshal(b, m, deterministic)
+}
+func (dst *Foo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Foo.Merge(dst, src)
+}
+func (m *Foo) XXX_Size() int {
+	return xxx_messageInfo_Foo.Size(m)
+}
+func (m *Foo) XXX_DiscardUnknown() {
+	xxx_messageInfo_Foo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Foo proto.InternalMessageInfo
+
+func (m *Foo) GetFoo() string {
+	if m != nil {
+		return m.Foo
+	}
+	return ""
+}
+
+type Foo_Bar struct {
+	Bar                  int32    `protobuf:"varint,2,opt,name=bar,proto3" json:"bar,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Foo_Bar) Reset()         { *m = Foo_Bar{} }
+func (m *Foo_Bar) String() string { return proto.CompactTextString(m) }
+func (*Foo_Bar) ProtoMessage()    {}
+func (*Foo_Bar) Descriptor() ([]byte, []int) {
+	return fileDescriptor_test_ccad7501a9b176f4, []int{1, 0}
+}
+func (m *Foo_Bar) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Foo_Bar.Unmarshal(m, b)
+}
+func (m *Foo_Bar) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Foo_Bar.Marshal(b, m, deterministic)
+}
+func (dst *Foo_Bar) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Foo_Bar.Merge(dst, src)
+}
+func (m *Foo_Bar) XXX_Size() int {
+	return xxx_messageInfo_Foo_Bar.Size(m)
+}
+func (m *Foo_Bar) XXX_DiscardUnknown() {
+	xxx_messageInfo_Foo_Bar.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Foo_Bar proto.InternalMessageInfo
+
+func (m *Foo_Bar) GetBar() int32 {
+	if m != nil {
+		return m.Bar
+	}
+	return 0
+}
+
+func init() {
+	proto.RegisterType((*Test)(nil), "protodecode.Test")
+	proto.RegisterType((*Foo)(nil), "protodecode.Foo")
+	proto.RegisterType((*Foo_Bar)(nil), "protodecode.Foo.Bar")
+}
+
+func init() { proto.RegisterFile("test.proto", fileDescriptor_test_ccad7501a9b176f4) }
+
+var fileDescriptor_test_ccad7501a9b176f4 = []byte{
+	// 267 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x91, 0xcd, 0x6a, 0xeb, 0x30,
+	0x10, 0x85, 0x91, 0x27, 0xbe, 0xc4, 0x93, 0x5b, 0x28, 0xde, 0x54, 0x14, 0x4a, 0x26, 0xce, 0x46,
+	0xab, 0x52, 0x1a, 0xe3, 0x07, 0xc8, 0x22, 0xd0, 0xad, 0xda, 0x7d, 0xb0, 0x6b, 0xb9, 0x18, 0x4c,
+	0xa6, 0x58, 0x7a, 0xda, 0x3e, 0x4d, 0xd1, 0x4f, 0x9a, 0x64, 0xa5, 0xd1, 0xd1, 0x99, 0xc3, 0x37,
+	0x23, 0x44, 0x67, 0xac, 0x7b, 0xfe, 0x9e, 0xd9, 0x71, 0xb9, 0x0a, 0x47, 0x6f, 0x3e, 0xb9, 0x37,
+	0xd5, 0x4f, 0x86, 0x8b, 0x0f, 0x63, 0x5d, 0xb9, 0xc6, 0xd5, 0x30, 0x9a, 0xa9, 0x3f, 0x8e, 0x27,
+	0xb7, 0x7b, 0x95, 0x82, 0x84, 0xca, 0x35, 0x06, 0xe9, 0xcd, 0x2b, 0xe5, 0x06, 0xff, 0x47, 0x83,
+	0x75, 0xf3, 0x78, 0xfa, 0x92, 0x19, 0x09, 0x55, 0xe8, 0xd8, 0xf4, 0x1e, 0xa4, 0x9b, 0x8c, 0xa6,
+	0x96, 0x40, 0x42, 0xc1, 0x25, 0xa3, 0xa9, 0x2f, 0x86, 0x61, 0xe2, 0xd6, 0xc9, 0x05, 0x09, 0x95,
+	0x25, 0xc3, 0xc1, 0x2b, 0xe5, 0x13, 0xc6, 0xdb, 0xb1, 0x63, 0x9e, 0x64, 0x4e, 0x42, 0x2d, 0x75,
+	0x11, 0x94, 0x3d, 0xf3, 0xf4, 0xc7, 0x60, 0x13, 0xe5, 0x9a, 0x40, 0xe5, 0x89, 0xc1, 0x46, 0xcc,
+	0x2d, 0xde, 0x25, 0x4b, 0xe2, 0x24, 0x02, 0x55, 0xe8, 0xd4, 0x97, 0x40, 0x6f, 0x72, 0x9a, 0x5a,
+	0x6e, 0x08, 0x14, 0x5c, 0xe5, 0x34, 0xf5, 0x95, 0x25, 0xb2, 0x56, 0x04, 0x2a, 0x3b, 0x5b, 0x22,
+	0xec, 0x79, 0x1a, 0x1b, 0x69, 0xb7, 0x04, 0x6a, 0x99, 0xa6, 0xb1, 0x1e, 0xb7, 0x7a, 0x41, 0x38,
+	0x30, 0x97, 0xf7, 0x08, 0x03, 0x73, 0x58, 0x69, 0xa1, 0x7d, 0xf9, 0xf8, 0x80, 0xb0, 0x6f, 0x67,
+	0xff, 0xd0, 0xb5, 0x73, 0xd8, 0x64, 0xae, 0x7d, 0xd9, 0xfd, 0x0b, 0x7f, 0xb3, 0xfb, 0x0d, 0x00,
+	0x00, 0xff, 0xff, 0x48, 0x39, 0x0b, 0x05, 0xb0, 0x01, 0x00, 0x00,
 }
