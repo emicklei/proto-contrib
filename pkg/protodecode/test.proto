@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protodecode;
+
+// protoc --go_out=. test.proto && mv test.pb.go test_pb_test.go
+
+message Test{
+    int32 field_int32 = 1;
+    string field_string = 2;
+}
