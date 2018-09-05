@@ -336,13 +336,28 @@ func (d *decoder) handleString(n string, repeated bool) error {
 }
 
 func (d *decoder) handleBool(n string, repeated bool) error {
-	// non-repeated and repeated
+	if repeated {
+		data, err := d.b.DecodeRawBytes(true)
+		if err != nil {
+			return fmt.Errorf("cannot decode repeated bool raw bytes:%v", err)
+		}
+		buf := pb.NewBuffer(data)
+		for {
+			x, err := buf.DecodeVarint()
+			if err == io.ErrUnexpectedEOF {
+				break
+			}
+			d.add(n, x == 1, repeated, !MapField)
+		}
+		return nil
+	}
+	// non-repeated
 	x, err := d.b.DecodeVarint()
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
 			return err
 		}
-		return fmt.Errorf("cannot decode %s:string:%v", n, err)
+		return fmt.Errorf("cannot decode %s:bool:%v", n, err)
 	}
 	d.add(n, x == 1, repeated, !MapField)
 	return nil
