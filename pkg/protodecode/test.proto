@@ -12,16 +12,20 @@ message Test{
     bool field_bool = 5;
 
     // repeated
-    repeated int32 fields_int32 = 31;
-    repeated string fields_string = 32;
-    repeated int64 fields_int64 = 33;
-    repeated float fields_float = 34;
-    repeated bool fields_bool = 35;
+    repeated int32 field_int32s = 31;
+    repeated string field_strings = 32;
+    repeated int64 field_int64s = 33;
+    repeated float field_floats = 34;
+    repeated bool field_bools = 35;
+
+    // nested
+    Foo field_foo = 61;
+    repeated Foo field_foos = 62;
+
+    // map
+    map<string,int32> field_map_string_int32 = 70; 
 }
 
 message Foo {
     string foo = 1;
-    message Bar {
-        int32 bar = 2;
-    }
 }
