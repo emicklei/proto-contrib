@@ -29,9 +29,9 @@ func encodeDecode(m *Test, t *testing.T) map[string]interface{} {
 	defs.AddFromFile("test.proto")
 
 	dec := NewDecoder(defs, proto.NewBuffer(data))
-	dec.verbose = true
+	// dec.verbose = true
 	result, err := dec.Decode("protodecode", "Test")
-	if err != nil && err != EOM {
+	if err != nil && err != ErrEndOfMessagge {
 		t.Fatal(err)
 	}
 	return result
