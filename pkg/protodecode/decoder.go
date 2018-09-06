@@ -23,11 +23,11 @@ type decoder struct {
 }
 
 func (d *decoder) Decode(pkg, t string) (map[string]interface{}, error) {
-	m := d.d.Message(pkg, t)
-	d.p = pkg
-	if m == nil {
+	m, ok := d.d.Message(pkg, t)
+	if !ok {
 		return nil, fmt.Errorf("no definition found for %s %s", pkg, t)
 	}
+	d.p = pkg
 	d.m = m
 	for {
 		op, err := d.b.DecodeVarint()
@@ -89,7 +89,7 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 	if "bool" == f.Type {
 		return d.handleBool(f.Name, f.Repeated)
 	}
-	if m := d.d.Message(d.p, f.Type); m == nil {
+	if _, ok := d.d.Message(d.p, f.Type); !ok {
 		return fmt.Errorf("unknown type:%s", f.Type)
 	}
 	nextData, err := d.b.DecodeRawBytes(true)
@@ -192,49 +192,49 @@ func (d *decoder) decodeOneOfField(f *pp.OneOfField, wire uint64) error {
 // https://developers.google.com/protocol-buffers/docs/proto3#maps
 func (d *decoder) decodeMapField(f *pp.MapField, wire uint64) error {
 	// create temporary proto Message such that we can use another decoder to do all the work
-	entryMessage := new(pp.Message)
-	entryMessage.Name = d.m.Name + "." + f.Name + ".Entry"
-	entryMessage.Elements = []pp.Visitee{
-		&pp.NormalField{
-			Field: &pp.Field{
-				Name:     "key",
-				Type:     f.KeyType,
-				Sequence: 1,
-			}},
-		&pp.NormalField{
-			Field: &pp.Field{Name: "value",
-				Type:     f.Type,
-				Sequence: 2,
-			},
-		}}
-	containerMessage := new(pp.Message)
-	containerMessage.Name = d.m.Name + "." + f.Name + ".List"
-	containerMessage.Elements = append(entryMessage.Elements,
-		&pp.NormalField{
-			Repeated: true,
-			Field: &pp.Field{
-				Name:     f.Name,
-				Type:     entryMessage.Name,
-				Sequence: 1}})
+	entryMessageName := d.m.Name + "." + f.Name + ".Entry"
+	if _, ok := d.d.Message(d.p, entryMessageName); !ok {
+		entryMessage := new(pp.Message)
+		entryMessage.Name = entryMessageName
+		entryMessage.Elements = []pp.Visitee{
+			&pp.NormalField{
+				Field: &pp.Field{
+					Name:     "key",
+					Type:     f.KeyType,
+					Sequence: 1,
+				}},
+			&pp.NormalField{
+				Field: &pp.Field{Name: "value",
+					Type:     f.Type,
+					Sequence: 2,
+				},
+			}}
+		d.d.AddMessage(d.p, entryMessage.Name, entryMessage)
+	}
 	nextData, err := d.b.DecodeRawBytes(true)
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
 			return err
 		}
-		return fmt.Errorf("unable or read raw bytes of map of type:%s", f.Type)
+		return fmt.Errorf("unable to read raw bytes of map of type:%s", f.Type)
 	}
-	// extend the specs TODO check for existence
-	d.d.AddMessage(d.p, containerMessage.Name, containerMessage)
-	d.d.AddMessage(d.p, entryMessage.Name, entryMessage)
-
 	sub := NewDecoder(d.d, pb.NewBuffer(nextData))
-	sub.Decode(d.p, containerMessage.Name) // what package?
-
+	result, err := sub.Decode(d.p, entryMessageName)
+	if err != nil && err != EOM {
+		return fmt.Errorf("unable to decode map of type:%s->%s err:%v", f.KeyType, f.Type, err)
+	}
 	// one of the repeated
-	result := map[string]interface{}{}
-	result[sub.r["key"].(string)] = sub.r["value"]
-	d.add(f.Name, result, !RepeatedField, MapField)
-
+	// TODO reflection
+	if f.KeyType == "string" {
+		mapResult := map[string]interface{}{}
+		mapResult[result["key"].(string)] = result["value"]
+		d.add(f.Name, mapResult, !RepeatedField, MapField)
+	}
+	if f.KeyType == "int64" {
+		mapResult := map[uint64]interface{}{}
+		mapResult[result["key"].(uint64)] = result["value"]
+		d.add(f.Name, mapResult, !RepeatedField, MapField)
+	}
 	return nil
 }
 
