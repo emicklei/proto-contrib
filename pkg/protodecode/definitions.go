@@ -45,9 +45,10 @@ func (d *Definitions) AddFromFile(filename string) error {
 	return nil
 }
 
-func (d *Definitions) Message(pkg string, name string) *pp.Message {
+func (d *Definitions) Message(pkg string, name string) (m *pp.Message, ok bool) {
 	key := fmt.Sprintf("%s.%s", pkg, name)
-	return d.specs[key]
+	m, ok = d.specs[key]
+	return
 }
 
 func (d *Definitions) AddMessage(pkg string, name string, message *pp.Message) {

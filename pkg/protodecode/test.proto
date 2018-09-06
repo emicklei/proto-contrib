@@ -23,7 +23,8 @@ message Test{
     repeated Foo field_foos = 62;
 
     // map
-    map<string,int32> field_map_string_int32 = 70; 
+    map<string,int32> field_map_string_int32 = 70;
+    map<int64,Foo> field_map_int64_Foo = 71; 
 }
 
 message Foo {
