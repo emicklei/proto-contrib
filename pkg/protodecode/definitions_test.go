@@ -8,7 +8,11 @@ func TestAddFromFile(t *testing.T) {
 	if got, want := len(d.filenamesRead), 1; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
-	if got, want := d.Message("protodecode", "Test").Name, "Test"; got != want {
+	m, ok := d.Message("protodecode", "Test")
+	if !ok {
+		t.Fail()
+	}
+	if got, want := m.Name, "Test"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
