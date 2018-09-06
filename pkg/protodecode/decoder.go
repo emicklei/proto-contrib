@@ -11,7 +11,13 @@ import (
 	pb "github.com/golang/protobuf/proto"
 )
 
-var EOM = errors.New("end of message reached")
+// ErrEndOfMessagge signals the decoder that a full message has been decoded
+var ErrEndOfMessagge = errors.New("end of message reached")
+
+const (
+	repeatedField = true
+	mapField      = true
+)
 
 type decoder struct {
 	d       *Definitions
@@ -40,7 +46,7 @@ func (d *decoder) Decode(pkg, t string) (map[string]interface{}, error) {
 			return d.r, err
 		}
 	}
-	return d.r, EOM
+	return d.r, ErrEndOfMessagge
 }
 
 // NewDecoder is the thing
@@ -111,17 +117,17 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 						log.Println("END", f.Name, ":", f.Type)
 					}
 					// TODO?????
-					d.add(f.Name, sub.r, RepeatedField, !MapField)
+					d.add(f.Name, sub.r, repeatedField, !mapField)
 					break
 				}
-				if EOM == err {
+				if ErrEndOfMessagge == err {
 					// TODO?????
-					d.add(f.Name, sub.r, RepeatedField, !MapField)
+					d.add(f.Name, sub.r, repeatedField, !mapField)
 					break
 				}
 				return fmt.Errorf("unable to decode repeated message of type:%v error:%v", f.Type, err)
 			}
-			d.add(f.Name, sub.r, RepeatedField, !MapField)
+			d.add(f.Name, sub.r, repeatedField, !mapField)
 		}
 	} else {
 		// single
@@ -129,11 +135,11 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 			log.Println("BEGIN single", f.Name, ":", f.Type)
 		}
 		if _, err := sub.Decode(d.p, f.Type); err != nil { // what package
-			if io.ErrUnexpectedEOF == err || EOM == err {
+			if io.ErrUnexpectedEOF == err || ErrEndOfMessagge == err {
 				if d.verbose {
 					log.Println("END", f.Name, ":", f.Type)
 				}
-				d.add(f.Name, sub.r, !RepeatedField, !MapField)
+				d.add(f.Name, sub.r, !repeatedField, !mapField)
 			} else {
 				return fmt.Errorf("unable to decode single message of type:%v error:%v", f.Type, err)
 			}
@@ -141,11 +147,6 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 	}
 	return nil
 }
-
-const (
-	RepeatedField = true
-	MapField      = true
-)
 
 func (d *decoder) add(key string, value interface{}, repeated bool, isMap bool) {
 	if d.verbose {
@@ -220,7 +221,7 @@ func (d *decoder) decodeMapField(f *pp.MapField, wire uint64) error {
 	}
 	sub := NewDecoder(d.d, pb.NewBuffer(nextData))
 	result, err := sub.Decode(d.p, entryMessageName)
-	if err != nil && err != EOM {
+	if err != nil && err != ErrEndOfMessagge {
 		return fmt.Errorf("unable to decode map of type:%s->%s err:%v", f.KeyType, f.Type, err)
 	}
 	// one of the repeated
@@ -228,12 +229,12 @@ func (d *decoder) decodeMapField(f *pp.MapField, wire uint64) error {
 	if f.KeyType == "string" {
 		mapResult := map[string]interface{}{}
 		mapResult[result["key"].(string)] = result["value"]
-		d.add(f.Name, mapResult, !RepeatedField, MapField)
+		d.add(f.Name, mapResult, !repeatedField, mapField)
 	}
 	if f.KeyType == "int64" {
 		mapResult := map[uint64]interface{}{}
 		mapResult[result["key"].(uint64)] = result["value"]
-		d.add(f.Name, mapResult, !RepeatedField, MapField)
+		d.add(f.Name, mapResult, !repeatedField, mapField)
 	}
 	return nil
 }
@@ -250,7 +251,7 @@ func (d *decoder) handleInt64(n string, repeated bool) error {
 			if err == io.ErrUnexpectedEOF {
 				break
 			}
-			d.add(n, x, repeated, !MapField)
+			d.add(n, x, repeated, !mapField)
 		}
 		return nil
 	}
@@ -262,7 +263,7 @@ func (d *decoder) handleInt64(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:int64:%v", n, err)
 	}
-	d.add(n, x, !RepeatedField, !MapField)
+	d.add(n, x, !repeatedField, !mapField)
 	return nil
 }
 
@@ -278,7 +279,7 @@ func (d *decoder) handleInt32(n string, repeated bool) error {
 			if err == io.ErrUnexpectedEOF {
 				break
 			}
-			d.add(n, int32(x), repeated, !MapField)
+			d.add(n, int32(x), repeated, !mapField)
 		}
 		return nil
 	}
@@ -290,7 +291,7 @@ func (d *decoder) handleInt32(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:int32:%v", n, err)
 	}
-	d.add(n, x, !RepeatedField, !MapField)
+	d.add(n, x, !repeatedField, !mapField)
 	return nil
 }
 
@@ -306,7 +307,7 @@ func (d *decoder) handleFloat(n string, repeated bool) error {
 			if err == io.ErrUnexpectedEOF {
 				break
 			}
-			d.add(n, math.Float32frombits(uint32(x)), repeated, !MapField)
+			d.add(n, math.Float32frombits(uint32(x)), repeated, !mapField)
 		}
 		return nil
 	}
@@ -318,7 +319,7 @@ func (d *decoder) handleFloat(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:float:%v", n, err)
 	}
-	d.add(n, math.Float32frombits(uint32(x)), !RepeatedField, !MapField)
+	d.add(n, math.Float32frombits(uint32(x)), !repeatedField, !mapField)
 	return nil
 }
 
@@ -331,7 +332,7 @@ func (d *decoder) handleString(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:string:%v", n, err)
 	}
-	d.add(n, string(sb), repeated, !MapField)
+	d.add(n, string(sb), repeated, !mapField)
 	return nil
 }
 
@@ -347,7 +348,7 @@ func (d *decoder) handleBool(n string, repeated bool) error {
 			if err == io.ErrUnexpectedEOF {
 				break
 			}
-			d.add(n, x == 1, repeated, !MapField)
+			d.add(n, x == 1, repeated, !mapField)
 		}
 		return nil
 	}
@@ -359,6 +360,6 @@ func (d *decoder) handleBool(n string, repeated bool) error {
 		}
 		return fmt.Errorf("cannot decode %s:bool:%v", n, err)
 	}
-	d.add(n, x == 1, repeated, !MapField)
+	d.add(n, x == 1, repeated, !mapField)
 	return nil
 }
