@@ -2,6 +2,8 @@ package protodecode
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -13,10 +15,13 @@ func fail(t *testing.T, got, want interface{}) {
 	t.Fatalf("got %v (%T) want %v (%T)", got, got, want, want)
 }
 
-func print(what interface{}) {
+func dump(what interface{}) {
+	fmt.Println(what)
 	e := json.NewEncoder(os.Stdout)
 	e.SetIndent("", "\t")
-	e.Encode(what)
+	if err := e.Encode(what); err != nil {
+		log.Println(err)
+	}
 }
 
 func encodeDecode(m *Test, t *testing.T) map[string]interface{} {
@@ -31,7 +36,7 @@ func encodeDecode(m *Test, t *testing.T) map[string]interface{} {
 	dec := NewDecoder(defs, proto.NewBuffer(data))
 	// dec.verbose = true
 	result, err := dec.Decode("protodecode", "Test")
-	if err != nil && err != ErrEndOfMessagge {
+	if err != nil && err != ErrEndOfMessage {
 		t.Fatal(err)
 	}
 	return result

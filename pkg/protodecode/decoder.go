@@ -11,8 +11,8 @@ import (
 	pb "github.com/golang/protobuf/proto"
 )
 
-// ErrEndOfMessagge signals the decoder that a full message has been decoded
-var ErrEndOfMessagge = errors.New("end of message reached")
+// ErrEndOfMessage signals the decoder that a full message has been decoded
+var ErrEndOfMessage = errors.New("end of message reached")
 
 const (
 	repeatedField = true
@@ -46,7 +46,7 @@ func (d *decoder) Decode(pkg, t string) (map[string]interface{}, error) {
 			return d.r, err
 		}
 	}
-	return d.r, ErrEndOfMessagge
+	return d.r, ErrEndOfMessage
 }
 
 // NewDecoder is the thing
@@ -120,7 +120,7 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 					d.add(f.Name, sub.r, repeatedField, !mapField)
 					break
 				}
-				if ErrEndOfMessagge == err {
+				if ErrEndOfMessage == err {
 					// TODO?????
 					d.add(f.Name, sub.r, repeatedField, !mapField)
 					break
@@ -135,7 +135,7 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 			log.Println("BEGIN single", f.Name, ":", f.Type)
 		}
 		if _, err := sub.Decode(d.p, f.Type); err != nil { // what package
-			if io.ErrUnexpectedEOF == err || ErrEndOfMessagge == err {
+			if io.ErrUnexpectedEOF == err || ErrEndOfMessage == err {
 				if d.verbose {
 					log.Println("END", f.Name, ":", f.Type)
 				}
@@ -221,19 +221,20 @@ func (d *decoder) decodeMapField(f *pp.MapField, wire uint64) error {
 	}
 	sub := NewDecoder(d.d, pb.NewBuffer(nextData))
 	result, err := sub.Decode(d.p, entryMessageName)
-	if err != nil && err != ErrEndOfMessagge {
+	if err != nil && err != ErrEndOfMessage {
 		return fmt.Errorf("unable to decode map of type:%s->%s err:%v", f.KeyType, f.Type, err)
 	}
-	// one of the repeated
-	// TODO reflection
-	if f.KeyType == "string" {
+	// TODO
+	// Golang cannot JSON marshal map[interface{}]interface{} so we convert the key to a string
+	if "string" == f.KeyType {
+		// one of the repeated
 		mapResult := map[string]interface{}{}
 		mapResult[result["key"].(string)] = result["value"]
 		d.add(f.Name, mapResult, !repeatedField, mapField)
-	}
-	if f.KeyType == "int64" {
-		mapResult := map[uint64]interface{}{}
-		mapResult[result["key"].(uint64)] = result["value"]
+	} else {
+		// one of the repeated
+		mapResult := map[string]interface{}{}
+		mapResult[fmt.Sprintf("%v (%T)", result["key"], result["key"])] = result["value"]
 		d.add(f.Name, mapResult, !repeatedField, mapField)
 	}
 	return nil
