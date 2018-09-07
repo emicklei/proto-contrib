@@ -162,7 +162,7 @@ func TestMapStringInt32(t *testing.T) {
 		},
 	}
 	result := encodeDecode(m, t)
-	field := result["field_map_string_int32"].(map[interface{}]interface{})
+	field := result["field_map_string_int32"].(map[string]interface{})
 	if got, want := field["hello"], uint64(1); got != want {
 		fail(t, got, want)
 	}
@@ -180,6 +180,17 @@ func TestMapInt64Foo(t *testing.T) {
 	field := result["field_map_int64_Foo"].(map[string]interface{})
 	foo1 := field["1 (uint64)"].(map[string]interface{})
 	if got, want := foo1["foo"], "foo1"; got != want {
+		fail(t, got, want)
+	}
+}
+
+func TestEnum(t *testing.T) {
+	m := &Test{
+		FieldEnum: Things_JOKE,
+	}
+	result := encodeDecode(m, t)
+	dump(result)
+	if got, want := result["field_enum"].(string), "JOKE"; got != want {
 		fail(t, got, want)
 	}
 }
