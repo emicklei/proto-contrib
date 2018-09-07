@@ -9,13 +9,15 @@ import (
 )
 
 type Definitions struct {
-	specs         map[string]*pp.Message
+	messages      map[string]*pp.Message
+	enums         map[string]*pp.Enum
 	filenamesRead []string
 }
 
 func NewDefinitions() *Definitions {
 	return &Definitions{
-		specs:         map[string]*pp.Message{},
+		messages:      map[string]*pp.Message{},
+		enums:         map[string]*pp.Enum{},
 		filenamesRead: []string{},
 	}
 }
@@ -42,18 +44,33 @@ func (d *Definitions) AddFromFile(filename string) error {
 	pp.Walk(def, pp.WithMessage(func(each *pp.Message) {
 		d.AddMessage(pkg, each.Name, each)
 	}))
+	pp.Walk(def, pp.WithEnum(func(each *pp.Enum) {
+		d.AddEnum(pkg, each.Name, each)
+	}))
 	return nil
 }
 
 func (d *Definitions) Message(pkg string, name string) (m *pp.Message, ok bool) {
 	key := fmt.Sprintf("%s.%s", pkg, name)
-	m, ok = d.specs[key]
+	m, ok = d.messages[key]
 	return
+}
+
+func (d *Definitions) Enum(pkg string, name string) (e *pp.Enum, ok bool) {
+	key := fmt.Sprintf("%s.%s", pkg, name)
+	e, ok = d.enums[key]
+	return
+}
+
+// AddEnum adds the Enum
+func (d *Definitions) AddEnum(pkg string, name string, enu *pp.Enum) {
+	key := fmt.Sprintf("%s.%s", pkg, name)
+	d.enums[key] = enu
 }
 
 func (d *Definitions) AddMessage(pkg string, name string, message *pp.Message) {
 	key := fmt.Sprintf("%s.%s", pkg, name)
-	d.specs[key] = message
+	d.messages[key] = message
 }
 
 func packageOf(def *pp.Proto) string {

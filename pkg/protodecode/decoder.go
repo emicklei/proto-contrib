@@ -95,9 +95,32 @@ func (d *decoder) decodeNormalField(f *pp.NormalField, wire uint64) error {
 	if "bool" == f.Type {
 		return d.handleBool(f.Name, f.Repeated)
 	}
-	if _, ok := d.d.Message(d.p, f.Type); !ok {
-		return fmt.Errorf("unknown type:%s", f.Type)
+	if _, ok := d.d.Message(d.p, f.Type); ok {
+		return d.decodeNormalFieldMessage(f)
 	}
+	if e, ok := d.d.Enum(d.p, f.Type); ok {
+		return d.decodeNormalFieldEnum(f, e)
+	}
+	return fmt.Errorf("unknown type:%s", f.Type)
+}
+
+func (d *decoder) decodeNormalFieldEnum(f *pp.NormalField, e *pp.Enum) error {
+	x, err := d.b.DecodeVarint()
+	if err != nil {
+		return err
+	}
+	for _, each := range e.Elements {
+		if ef, ok := each.(*pp.EnumField); ok {
+			if ef.Integer == int(x) {
+				d.add(f.Name, ef.Name, f.Repeated, !mapField)
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("unknown enum field value:%d", x)
+}
+
+func (d *decoder) decodeNormalFieldMessage(f *pp.NormalField) error {
 	nextData, err := d.b.DecodeRawBytes(true)
 	if err != nil {
 		if io.ErrUnexpectedEOF == err {
