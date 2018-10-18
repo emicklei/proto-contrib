@@ -23,3 +23,9 @@ It is also possible to add multiple proto files
     google/protobuf/timestamp.proto
     v1/myotherservice.proto
     v1/othershared.proto
+
+Use the format flag to get JSON output
+
+    $ protodep -format json v1/myservice.proto v1/myotherservice.proto
+
+    ["v1/myservice.proto", "v1/shared.proto", ...]
