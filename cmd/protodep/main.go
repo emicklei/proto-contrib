@@ -37,7 +37,7 @@ var format = flag.String("format", "", "by default the output is a list of impor
 
 func main() {
 	flag.Parse()
-	if len(flag.Args()) == 1 {
+	if len(flag.Args()) == 0 {
 		log.Fatal("missing proto file parameter")
 	}
 
