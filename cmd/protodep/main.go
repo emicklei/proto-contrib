@@ -24,6 +24,8 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -31,29 +33,39 @@ import (
 	"github.com/emicklei/proto"
 )
 
+var format = flag.String("format", "", "by default the output is a list of import names in plain text. JSON is the alternative")
+
 func main() {
-	if len(os.Args) == 1 {
+	flag.Parse()
+	if len(flag.Args()) == 1 {
 		log.Fatal("missing proto file parameter")
 	}
 
 	overallList := []string{}
-	for i := 1; i < len(os.Args); i++ {
-		list, err := allImportsOf(os.Args[i], map[string]bool{})
+	for _, each := range flag.Args() {
+		overallList = append(overallList, each)
+		list, err := allImportsOf(each, map[string]bool{})
 		if err != nil {
 			log.Fatal("failed to parse imports ", err)
 		}
-
-		overallList = append(overallList, os.Args[i])
-		for _, each := range list {
-			overallList = append(overallList, each.Filename)
+		for _, other := range list {
+			overallList = append(overallList, other.Filename)
 		}
 	}
 
 	overallList = unique(overallList)
 
-	for _, each := range overallList {
-		fmt.Println(each)
+	if len(*format) == 0 {
+		for _, each := range overallList {
+			fmt.Println(each)
+		}
+		return
 	}
+	if "json" == *format {
+		json.NewEncoder(os.Stdout).Encode(overallList)
+		return
+	}
+	log.Fatal("unknown format argument", *format)
 }
 
 func unique(slice []string) []string {
