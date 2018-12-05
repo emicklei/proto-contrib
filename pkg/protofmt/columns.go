@@ -100,11 +100,10 @@ func (p *columnsPrinter) VisitImport(i *proto.Import) {
 func (p *columnsPrinter) VisitNormalField(f *proto.NormalField) {
 	if f.Repeated {
 		p.cols = append(p.cols, leftAligned("repeated "))
-	} else {
-		p.cols = append(p.cols, alignedEmpty)
-	}
-	if f.Optional {
+	} else if f.Optional {
 		p.cols = append(p.cols, leftAligned("optional "))
+	} else if f.Required {
+		p.cols = append(p.cols, leftAligned("required "))
 	} else {
 		p.cols = append(p.cols, alignedEmpty)
 	}
