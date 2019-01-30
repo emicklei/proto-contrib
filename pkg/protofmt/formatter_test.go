@@ -120,6 +120,7 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
   
   }
 }
+
 `
 	p := newParserOn(src)
 	def, err := p.Parse()
