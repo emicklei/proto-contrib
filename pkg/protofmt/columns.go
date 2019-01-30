@@ -108,7 +108,7 @@ func (p *columnsPrinter) VisitNormalField(f *proto.NormalField) {
 	} else {
 		p.cols = append(p.cols, alignedEmpty)
 	}
-	p.cols = append(p.cols, rightAligned(f.Type), alignedSpace, leftAligned(f.Name), alignedEquals, rightAligned(strconv.Itoa(f.Sequence)))
+	p.cols = append(p.cols, leftAligned(f.Type), alignedSpace, leftAligned(f.Name), alignedEquals, rightAligned(strconv.Itoa(f.Sequence)))
 	if len(f.Options) > 0 {
 		p.cols = append(p.cols, leftAligned(" ["))
 		for i, each := range f.Options {
@@ -140,7 +140,7 @@ func (p *columnsPrinter) VisitComment(e *proto.Comment) {}
 func (p *columnsPrinter) VisitOneof(o *proto.Oneof)     {}
 func (p *columnsPrinter) VisitOneofField(o *proto.OneOfField) {
 	p.cols = append(p.cols,
-		rightAligned(o.Type),
+		leftAligned(o.Type),
 		alignedSpace,
 		leftAligned(o.Name),
 		alignedEquals,
@@ -207,7 +207,7 @@ func (p *columnsPrinter) VisitMapField(f *proto.MapField) {
 	p.cols = append(p.cols,
 		alignedEmpty, // no repeated
 		alignedEmpty, // no optional
-		rightAligned(fmt.Sprintf("map <%s,%s>", f.KeyType, f.Type)),
+		leftAligned(fmt.Sprintf("map <%s,%s>", f.KeyType, f.Type)),
 		alignedSpace,
 		leftAligned(f.Name),
 		// notAligned("map <"),
