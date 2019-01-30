@@ -24,13 +24,11 @@
 package main
 
 import (
-	"io"
-	"os"
-
-	"flag"
-
 	"bytes"
+	"flag"
+	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/emicklei/proto"
 	"github.com/emicklei/proto-contrib/pkg/protofmt"
