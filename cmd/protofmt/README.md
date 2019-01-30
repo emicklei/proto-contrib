@@ -33,6 +33,7 @@ Different structural top level definitions (message,service,enum) are separated 
 	message Z {}
 
 	enum E {}
+
 Comments are preceeded with an empty line unless it is defined after a statement.
 
 	// nice message to send
@@ -46,10 +47,10 @@ Fields in messages and enums, rpc-s in services are all formatted in a columnar 
 
 	repeated sfixed32 packed_sfixed32 =  98 [packed = true];
 	repeated sfixed64 packed_sfixed64 =  99 [packed = true];
-	repeated    float packed_float    = 100 [packed = true];
-	repeated   double packed_double   = 101 [packed = true];
+	repeated float    packed_float    = 100 [packed = true];
+	repeated double   packed_double   = 101 [packed = true];
 
-This example shows that field types are right aligned.
+This example shows that field types are left aligned.
 Field names are left aligned.
 Field sequence numbers are right aligned.
 
@@ -57,15 +58,14 @@ Field sequence numbers are right aligned.
 Embedded options (specified for fields) have a compact format without special alignment.
 
 	message Defaults {
-	  optional   bool default_bool   = 1 [default = true   ];
+	  optional bool   default_bool   = 1 [default = true   ];
 	  optional string default_string = 2 [default = "hello"];
 	}
 
 Top level options have right aligned names and values.
 
-	option         optimize_for =           SPEED;
+	option optimize_for         =           SPEED;
 	option java_outer_classname = "UnittestProto";
-
 
 #### RPCs in services
 Request and Response types of rpc elements are left aligned.
@@ -78,14 +78,16 @@ Closing brackets are right aligned.
 	}
 
 ## Docker
+
 A Docker image is available on Dockerhub.
 It can be used as part of your continuous integration build pipeline.
 
-### build 
+### build
+
 	GOOS=linux go build
 	docker build -t emicklei/protofmt .
 
 ### run
-	 docker run -v $(pwd):/data emicklei/protofmt /data/YOUR.proto	
+	 docker run -v $(pwd):/data emicklei/protofmt /data/YOUR.proto
 
-© 2017, [ernestmicklei.com](http://ernestmicklei.com).  MIT License.     
+© 2017, [ernestmicklei.com](http://ernestmicklei.com).  MIT License.
