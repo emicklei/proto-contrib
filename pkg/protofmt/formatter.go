@@ -126,8 +126,8 @@ func (f *Formatter) VisitOption(o *proto.Option) {
 
 // VisitPackage formats a Package.
 func (f *Formatter) VisitPackage(p *proto.Package) {
-	f.nl()
 	f.printAsGroups([]proto.Visitee{p})
+	f.nl()
 }
 
 // VisitService formats a Service.
@@ -149,6 +149,7 @@ func (f *Formatter) VisitSyntax(s *proto.Syntax) {
 	f.begin("syntax", s)
 	fmt.Fprintf(f.w, "syntax = %q", s.Value)
 	f.endWithComment(s.InlineComment)
+	f.nl()
 }
 
 // VisitOneof formats a Oneof.
