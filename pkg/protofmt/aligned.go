@@ -38,7 +38,7 @@ var (
 	alignedSpace       = leftAligned(" ")
 	alignedComma       = leftAligned(", ")
 	alignedEmpty       = leftAligned("")
-	alignedSemicolon   = leftAligned(";")
+	alignedSemicolon   = notAligned(";")
 )
 
 func leftAligned(src string) aligned  { return aligned{src, true, true} }
