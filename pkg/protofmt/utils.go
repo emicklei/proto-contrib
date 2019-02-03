@@ -133,7 +133,7 @@ func (f *Formatter) nl() {
 	io.WriteString(f.w, "\n")
 }
 
-// level changes the current indentLevel
+// level changes the current indentLevel but does not print indentation.
 func (f *Formatter) level(diff int) {
 	f.lastLevel = f.indentLevel
 	f.indentLevel += diff
