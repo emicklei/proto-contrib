@@ -176,3 +176,33 @@ message Test {
 	f := NewFormatter(b, "  ") // 2 spaces
 	f.Format(def)
 }
+
+// https://github.com/emicklei/proto-contrib/issues/8
+func TestOptionWithStructureAndTwoFields(t *testing.T) {
+	src := `service X {	
+  rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option simple = "easy";
+    option (google.api.http) = {
+	  get: "/hello"
+	  additional_bindings: {
+	    get: "/hello/world"
+	  }
+	};
+  }	
+}
+`
+	p := newParserOn(src)
+	def, err := p.Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := formatted(def.Elements[0]), src; got != want {
+		fmt.Println(diff(got, want))
+		fmt.Println("--- got")
+		fmt.Println(got)
+		fmt.Println("--- want")
+		fmt.Println(want)
+		t.Fail()
+	}
+	//spew.Dump(def.Elements[0])
+}

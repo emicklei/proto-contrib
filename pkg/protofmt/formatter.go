@@ -104,24 +104,31 @@ func (f *Formatter) VisitMessage(m *proto.Message) {
 func (f *Formatter) VisitOption(o *proto.Option) {
 	f.begin("option", o)
 	fmt.Fprintf(f.w, "option %s = ", o.Name)
-	if o.AggregatedConstants != nil {
-		fmt.Fprintf(f.w, "{\n")
-		f.level(1)
-		for _, each := range o.AggregatedConstants {
-			f.indent(0)
-			fmt.Fprintf(f.w, "%s: %s\n", each.Name, each.Literal.SourceRepresentation())
-		}
-		f.indent(-1)
-		fmt.Fprintf(f.w, "}")
-	} else {
-		// TODO printAs groups with fixed length
-		fmt.Fprintf(f.w, o.Constant.SourceRepresentation())
-	}
+	f.formatLiteral(&o.Constant)
 	fmt.Fprintf(f.w, ";")
 	if o.InlineComment != nil {
 		fmt.Fprintf(f.w, " //%s", o.InlineComment.Message())
 	}
 	f.nl()
+}
+
+func (f *Formatter) formatLiteral(l *proto.Literal) {
+	if l.IsString {
+		fmt.Fprintf(f.w, "%s", l.SourceRepresentation())
+		return
+	}
+	fmt.Fprintf(f.w, "{\n")
+	for _, other := range l.OrderedMap {
+		f.indent(1)
+		fmt.Fprintf(f.w, "%s", other.Name)
+		if other.PrintsColon {
+			fmt.Fprintf(f.w, ": ")
+		}
+		f.formatLiteral(other.Literal)
+		f.nl()
+		f.indent(-1)
+	}
+	fmt.Fprintf(f.w, "}\n")
 }
 
 // VisitPackage formats a Package.
