@@ -128,7 +128,7 @@ func (f *Formatter) formatLiteral(l *proto.Literal) {
 		f.nl()
 		f.indent(-1)
 	}
-	fmt.Fprintf(f.w, "}\n")
+	fmt.Fprintf(f.w, "}")
 }
 
 // VisitPackage formats a Package.
