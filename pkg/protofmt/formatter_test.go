@@ -181,7 +181,7 @@ message Test {
 func TestOptionWithStructureAndTwoFields(t *testing.T) {
 	src := `service X {	
   rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
-    option simple = "easy";
+	option simple = "easy";
     option (google.api.http) = {
 	  get: "/hello"
 	  additional_bindings: {
