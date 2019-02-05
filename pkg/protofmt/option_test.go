@@ -38,8 +38,7 @@ func TestOpenWithMap(t *testing.T) {
 	got := formatted(o)
 	fmt.Println(got)
 
-	want :=
-		`option (google.api.http) = {
+	want := `option (google.api.http) = {
   get: "/hello"
   additional_bindings: {
     get: "/hello/world"
@@ -47,7 +46,10 @@ func TestOpenWithMap(t *testing.T) {
 };
 `
 	if got != want {
-		t.Fail()
-		t.Log(got)
+		fmt.Println(diff(got, want))
+		fmt.Println("--- got")
+		fmt.Println(got)
+		fmt.Println("--- want")
+		fmt.Println(want)
 	}
 }

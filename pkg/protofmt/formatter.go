@@ -109,7 +109,6 @@ func (f *Formatter) VisitOption(o *proto.Option) {
 	if o.InlineComment != nil {
 		fmt.Fprintf(f.w, " //%s", o.InlineComment.Message())
 	}
-	f.nl()
 }
 
 func (f *Formatter) formatLiteral(l *proto.Literal) {
