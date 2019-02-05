@@ -115,7 +115,7 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
   rpc Find (Finder) returns (stream Result) {
     option (google.api.http) = {
       post: "/v1/finders/1"
-        body: "*"
+      body: "*"
     };
   }
 }
@@ -201,5 +201,18 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 		fmt.Println("--- want")
 		fmt.Println(want)
 		//t.Fail()
+	}
+}
+
+func TestOptionTrue(t *testing.T) {
+	src := `option alive = true;`
+	p := newParserOn(src)
+	def, err := p.Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := formatted(def.Elements[0]), src; got != want {
+		fmt.Println(diff(got, want))
+		t.Fail()
 	}
 }

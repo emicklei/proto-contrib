@@ -43,13 +43,13 @@ func TestOpenWithMap(t *testing.T) {
   additional_bindings: {
     get: "/hello/world"
   }
-};
-`
+};`
 	if got != want {
 		fmt.Println(diff(got, want))
 		fmt.Println("--- got")
 		fmt.Println(got)
 		fmt.Println("--- want")
 		fmt.Println(want)
+		t.Fail()
 	}
 }
