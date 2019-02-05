@@ -109,10 +109,11 @@ func (f *Formatter) VisitOption(o *proto.Option) {
 	if o.InlineComment != nil {
 		fmt.Fprintf(f.w, " //%s", o.InlineComment.Message())
 	}
+	f.end("option")
 }
 
 func (f *Formatter) formatLiteral(l *proto.Literal) {
-	if l.IsString {
+	if len(l.OrderedMap) == 0 && len(l.Array) == 0 {
 		fmt.Fprintf(f.w, "%s", l.SourceRepresentation())
 		return
 	}
@@ -124,9 +125,10 @@ func (f *Formatter) formatLiteral(l *proto.Literal) {
 			fmt.Fprintf(f.w, ": ")
 		}
 		f.formatLiteral(other.Literal)
+		f.level(-1)
 		f.nl()
-		f.indent(-1)
 	}
+	f.indent(0)
 	fmt.Fprintf(f.w, "}")
 }
 
