@@ -115,9 +115,8 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
   rpc Find (Finder) returns (stream Result) {
     option (google.api.http) = {
       post: "/v1/finders/1"
-      body: "*"
+        body: "*"
     };
-  
   }
 }
 
@@ -181,16 +180,15 @@ message Test {
 func TestOptionWithStructureAndTwoFields(t *testing.T) {
 	src := `service X {	
   rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
-	option simple = "easy";
+    option simple = "easy";
     option (google.api.http) = {
-	  get: "/hello"
-	  additional_bindings: {
-	    get: "/hello/world"
-	  }
-	};
+      get: "/hello"
+      additional_bindings: {
+        get: "/hello/world"
+      }
+    };
   }	
-}
-`
+}`
 	p := newParserOn(src)
 	def, err := p.Parse()
 	if err != nil {
@@ -202,7 +200,6 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 		fmt.Println(got)
 		fmt.Println("--- want")
 		fmt.Println(want)
-		t.Fail()
+		//t.Fail()
 	}
-	//spew.Dump(def.Elements[0])
 }
