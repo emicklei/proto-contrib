@@ -1,7 +1,9 @@
 package protofmt
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/emicklei/proto"
@@ -52,6 +54,18 @@ func TestOpenWithMap(t *testing.T) {
 		fmt.Println(got)
 		fmt.Println("--- want")
 		fmt.Println(want)
+		t.Fail()
+	}
+}
+
+func TestFieldOptionsAreNotStrippedIssue7(t *testing.T) {
+	src := `int32 age = 1 [(validator.field) = { int_gt: 0 }];`
+	def, _ := proto.NewParser(strings.NewReader(src)).Parse()
+	b := new(bytes.Buffer)
+	f := NewFormatter(b, " ")
+	f.Format(def)
+	if got, want := src, formatted(def.Elements[0]); got != want {
+		println(diff(got, want))
 		t.Fail()
 	}
 }

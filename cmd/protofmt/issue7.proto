@@ -1,0 +1,5 @@
+syntax = "proto";
+
+message Issue7 {
+    int32 age = 1 [(validator.field) = { int_gt: 0 }];
+}

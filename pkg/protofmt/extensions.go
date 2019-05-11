@@ -6,6 +6,11 @@ import "github.com/emicklei/proto"
 func keyValuePair(o *proto.Option, embedded bool) (cols []aligned) {
 	equals := alignedEquals
 	name := o.Name
+	if len(o.Constant.OrderedMap) > 0 {
+		cols = append(cols, leftAligned(name), equals)
+		cols = append(cols, columnsPrintablesFromMap(o.Constant.OrderedMap)...)
+		return
+	}
 	if embedded {
 		return append(cols, leftAligned(name), equals, leftAligned(o.Constant.SourceRepresentation())) // numbers right, strings left? TODO
 	}
@@ -29,4 +34,14 @@ func columnsPrintables(c *proto.Comment) (list []columnsPrintable) {
 
 func typeAssertColumnsPrintable(v proto.Visitee) (columnsPrintable, bool) {
 	return asColumnsPrintable(v), len(asColumnsPrintable(v).columns()) > 0
+}
+
+func columnsPrintablesFromMap(m proto.LiteralMap) (cols []aligned) {
+	cols = append(cols, leftAligned("{"), alignedSpace)
+	for _, each := range m {
+		// TODO only works for simple constants
+		cols = append(cols, leftAligned(each.Name), alignedColon, leftAligned(each.SourceRepresentation()))
+	}
+	cols = append(cols, alignedSpace, leftAligned("}"))
+	return
 }

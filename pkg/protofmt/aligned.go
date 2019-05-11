@@ -39,6 +39,7 @@ var (
 	alignedComma       = leftAligned(", ")
 	alignedEmpty       = leftAligned("")
 	alignedSemicolon   = notAligned(";")
+	alignedColon       = notAligned(":")
 )
 
 func leftAligned(src string) aligned  { return aligned{src, true, true} }
