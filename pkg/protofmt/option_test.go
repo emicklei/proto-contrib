@@ -15,6 +15,7 @@ func TestOpenWithMap(t *testing.T) {
 	get := new(proto.NamedLiteral)
 	get.Name = "get"
 	get.Literal = new(proto.Literal)
+	get.QuoteRune = rune('"')
 	get.Source = "/hello"
 	get.IsString = true
 	get.PrintsColon = true
@@ -23,6 +24,7 @@ func TestOpenWithMap(t *testing.T) {
 	get2.Name = "get"
 	get2.Literal = new(proto.Literal)
 	get2.Source = "/hello/world"
+	get2.QuoteRune = rune('"')
 	get2.IsString = true
 	get2.PrintsColon = true
 
