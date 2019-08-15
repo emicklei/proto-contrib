@@ -10,7 +10,6 @@ import (
 )
 
 func TestMessageToRecord1(t *testing.T) {
-	t.Skip("This test panics")
 	src := `// Wonderful example
 			message Test {
 			// that's all

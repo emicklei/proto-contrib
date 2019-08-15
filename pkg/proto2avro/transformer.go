@@ -72,7 +72,11 @@ func (b Builder) Build(name string) (Record, bool) {
 
 func (b Builder) toRecordField(f *proto.NormalField) Field {
 	if f.Repeated {
-		itemType, ok := b.Build(f.Type)
+		var itemType interface{}
+		itemType, ok := toRecordFieldType(f.Type)
+		if !ok {
+			itemType, ok = b.Build(f.Type)
+		}
 		if !ok {
 			return Field{Name: f.Name, Type: "ERROR: missing " + f.Type}
 		}
@@ -86,8 +90,8 @@ func (b Builder) toRecordField(f *proto.NormalField) Field {
 	}
 	rf := Field{
 		Name: f.Name,
-		Type: toOptionalField(toRecordFieldType(f.Type)),
 	}
+	rf.Type, _ = toRecordFieldType(f.Type)
 	if f.Comment != nil {
 		rf.Doc = f.Comment.Message()
 	}
@@ -99,17 +103,17 @@ func toOptionalField(typeName string) []string {
 }
 
 // https://developers.google.com/protocol-buffers/docs/proto#scalar
-func toRecordFieldType(typeName string) string {
+func toRecordFieldType(typeName string) (string, bool) {
 	switch typeName {
 	case "bool":
-		return "boolean"
+		return "boolean", true
 	case "uint16", "sint32", "int32", "fixed32", "sfixed32":
-		return "int"
+		return "int", true
 	case "int64", "uint64", "sint64", "fixed64", "sfixed64":
-		return "long"
+		return "long", true
 	case "double", "float", "string", "bytes":
-		return typeName
+		return typeName, true
 	default:
-		return typeName
+		return typeName, false
 	}
 }
