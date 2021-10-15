@@ -1,3 +1,5 @@
 module github.com/emicklei/proto-contrib
 
-require github.com/emicklei/proto v1.6.11
+go 1.16
+
+require github.com/emicklei/proto v1.9.1

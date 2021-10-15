@@ -105,7 +105,7 @@ func (f *Formatter) VisitOption(o *proto.Option) {
 	f.begin("option", o)
 	fmt.Fprintf(f.w, "option %s = ", o.Name)
 	f.formatLiteral(&o.Constant)
-	fmt.Fprintf(f.w, ";")
+	fmt.Fprintf(f.w, ";\n")
 	if o.InlineComment != nil {
 		fmt.Fprintf(f.w, " //%s", o.InlineComment.Message())
 	}
@@ -157,7 +157,6 @@ func (f *Formatter) VisitSyntax(s *proto.Syntax) {
 	f.begin("syntax", s)
 	fmt.Fprintf(f.w, "syntax = %q", s.Value)
 	f.endWithComment(s.InlineComment)
-	f.nl()
 }
 
 // VisitOneof formats a Oneof.

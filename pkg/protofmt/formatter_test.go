@@ -117,6 +117,7 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
       post: "/v1/finders/1"
       body: "*"
     };
+  
   }
 }
 
@@ -181,6 +182,7 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 	src := `service X {	
   rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option simple = "easy";
+
     option (google.api.http) = {
       get: "/hello"
       additional_bindings: {
@@ -205,7 +207,8 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 }
 
 func TestOptionTrue(t *testing.T) {
-	src := `option alive = true;`
+	src := `option alive = true;
+`
 	p := newParserOn(src)
 	def, err := p.Parse()
 	if err != nil {
