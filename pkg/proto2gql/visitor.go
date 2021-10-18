@@ -107,7 +107,7 @@ func (v *Visitor) VisitMessage(m *proto.Message) {
 
 }
 func (v *Visitor) VisitService(s *proto.Service) {}
-func (v *Visitor) VisitSyntax(s *proto.Syntax)   {}
+func (v *Visitor) (s *proto.Syntax)   {}
 func (v *Visitor) VisitPackage(p *proto.Package) {
 	v.scope.SetPackageName(p.Name)
 }

@@ -78,7 +78,9 @@ func (f *Formatter) VisitEnumField(e *proto.EnumField) {
 
 // VisitImport formats a Import.
 func (f *Formatter) VisitImport(i *proto.Import) {
+	f.begin("import", i)
 	f.printAsGroups([]proto.Visitee{i})
+	f.end("import")
 }
 
 // VisitMessage formats a Message.
@@ -96,7 +98,7 @@ func (f *Formatter) VisitMessage(m *proto.Message) {
 		f.printAsGroups(m.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n\n")
+	io.WriteString(f.w, "}\n")
 	f.end("message")
 }
 
@@ -134,8 +136,9 @@ func (f *Formatter) formatLiteral(l *proto.Literal) {
 
 // VisitPackage formats a Package.
 func (f *Formatter) VisitPackage(p *proto.Package) {
+	f.begin("package", p)
 	f.printAsGroups([]proto.Visitee{p})
-	f.nl()
+	f.end("package")
 }
 
 // VisitService formats a Service.
@@ -148,7 +151,7 @@ func (f *Formatter) VisitService(s *proto.Service) {
 		f.printAsGroups(s.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n\n")
+	io.WriteString(f.w, "}\n")
 	f.end("service")
 }
 
@@ -157,6 +160,7 @@ func (f *Formatter) VisitSyntax(s *proto.Syntax) {
 	f.begin("syntax", s)
 	fmt.Fprintf(f.w, "syntax = %q", s.Value)
 	f.endWithComment(s.InlineComment)
+	f.end("syntax")
 }
 
 // VisitOneof formats a Oneof.
