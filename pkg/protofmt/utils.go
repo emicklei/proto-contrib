@@ -78,6 +78,16 @@ func (f *Formatter) begin(stmt string, v proto.Visitee) {
 	f.indent(0)
 }
 
+// beginNoDoc writes a newline if the last statement kind is different. always indents.
+func (f *Formatter) beginNoDoc(stmt string, v proto.Visitee) {
+	// if not the first statement and different from last and on same indent level.
+	if len(f.lastStmt) > 0 && f.lastStmt != stmt && f.lastLevel == f.indentLevel {
+		f.nl()
+	}
+	f.lastStmt = stmt
+	f.indent(0)
+}
+
 func (f *Formatter) end(stmt string) {
 	f.lastStmt = stmt
 }
