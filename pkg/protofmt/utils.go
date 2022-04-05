@@ -35,6 +35,9 @@ func (f *Formatter) printDoc(v proto.Visitee) {
 	if hasDoc, ok := v.(proto.Documented); ok {
 		if doc := hasDoc.Doc(); doc != nil {
 			f.printComment(doc)
+		} else {
+			// no doc
+			f.nl()
 		}
 	}
 }
