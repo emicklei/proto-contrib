@@ -26,6 +26,7 @@ package protofmt
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/emicklei/proto"
 )
@@ -35,20 +36,18 @@ func (f *Formatter) printDoc(v proto.Visitee) {
 	if hasDoc, ok := v.(proto.Documented); ok {
 		if doc := hasDoc.Doc(); doc != nil {
 			f.printComment(doc)
-		} else {
-			// no doc
-			f.nl()
 		}
 	}
 }
 
 // printComment formats a Comment.
 func (f *Formatter) printComment(c *proto.Comment) {
-	f.nl()
 	if c.Cstyle {
+		f.indent(0)
 		fmt.Fprintln(f.w, "/*")
 	}
 	for i, each := range c.Lines {
+		each = strings.TrimRight(each, " ")
 		f.indent(0)
 		if c.Cstyle {
 			// only skip first and last empty lines
@@ -65,7 +64,7 @@ func (f *Formatter) printComment(c *proto.Comment) {
 		}
 	}
 	if c.Cstyle {
-		fmt.Fprintf(f.w, " */\n")
+		fmt.Fprintf(f.w, " */")
 	}
 }
 
@@ -174,7 +173,11 @@ func (f *Formatter) printAsGroups(list []proto.Visitee) {
 				if doc := hasDoc.Doc(); doc != nil {
 					f.printListOfColumns(group)
 					// begin new group
-					group = append([]columnsPrintable{}, columnsPrintables(doc)...)
+					group = []columnsPrintable{}
+					if len(doc.Lines) > 0 { // if comment then add newline before it
+						group = append(group, inlineComment{line: "", extraSlash: false})
+					}
+					group = append(group, columnsPrintables(doc)...)
 				}
 			}
 			group = append(group, printable)

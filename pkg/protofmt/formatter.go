@@ -51,10 +51,10 @@ func (f *Formatter) Format(p *proto.Proto) {
 	}
 }
 
-// VisitComment formats a Comment and writes a newline.
+// VisitComment formats a Comment and writes enclosing newlines.
 func (f *Formatter) VisitComment(c *proto.Comment) {
-	f.printComment(c)
 	f.nl()
+	f.printComment(c)
 }
 
 // VisitEnum formats a Enum.

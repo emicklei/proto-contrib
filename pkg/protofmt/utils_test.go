@@ -22,7 +22,7 @@ func diff(left, right string) string {
 		} else if '\t' == char {
 			b.WriteString("(t)")
 		} else if ' ' == char {
-			b.WriteString("( )")
+			b.WriteString("(.)")
 		} else {
 			b.WriteRune(char)
 		}

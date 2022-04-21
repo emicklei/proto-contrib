@@ -68,7 +68,6 @@ ABC = 12 [ab = 1234];
 }
 
 func TestFormatCStyleComment(t *testing.T) {
-	t.Skip()
 	src := `/*
  * Hello
  * World
@@ -78,19 +77,22 @@ func TestFormatCStyleComment(t *testing.T) {
 	b := new(bytes.Buffer)
 	f := NewFormatter(b, " ")
 	f.Format(def)
-	if got, want := src, formatted(def.Elements[0]); got != want {
+	if got, want := formatted(def.Elements[0]), src; got != want {
 		println(diff(got, want))
 		t.Fail()
 	}
 }
 
 func TestFormatExtendMessage(t *testing.T) {
-	t.Skip()
-	src := `
-// extend
+	src := `// extend
 extend google.protobuf.MessageOptions {
+  
   // my_option
   optional string my_option = 51234; // mynumber
+  
+  // other
+  string field      = 12;
+  string no_comment = 13;
 }
 `
 	p := newParserOn(src)
@@ -104,7 +106,8 @@ extend google.protobuf.MessageOptions {
 	}
 	if got, want := formatted(m), src; got != want {
 		fmt.Println(diff(got, want))
-		fmt.Println(got)
+		fmt.Println("<" + got + ">")
+		fmt.Println("<" + want + ">")
 		t.Fail()
 	}
 }
@@ -120,7 +123,6 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
   
   }
 }
-
 `
 	p := newParserOn(src)
 	def, err := p.Parse()
@@ -179,7 +181,7 @@ message Test {
 
 // https://github.com/emicklei/proto-contrib/issues/8
 func TestOptionWithStructureAndTwoFields(t *testing.T) {
-	src := `service X {	
+	src := `service X {
   rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option simple = "easy";
 
@@ -189,7 +191,8 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
         get: "/hello/world"
       }
     };
-  }	
+
+  }
 }`
 	p := newParserOn(src)
 	def, err := p.Parse()
