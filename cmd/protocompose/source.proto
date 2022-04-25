@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package somepackage.v2;
+
+import "google/type/date.proto";
+
+message Source {
+    // the identifier
+    string id = 1;    
+
+    // date of issue
+    google.type.Date issue_date = 2;
+
+    // unused
+    string external_code = 3;
+}

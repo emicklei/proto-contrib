@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protocompose.v1;
+
+// Composed is a test message
+//
+// @compose somepackage.v2.Source.id
+// @compose somepackage.v2.Source.issue_date
+message Composed {
+}

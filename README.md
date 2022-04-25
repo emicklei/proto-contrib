@@ -56,14 +56,16 @@ See folder `cmd/proto2gql/README.md` for more details.
     google/protobuf/descriptor.proto
     google/protobuf/timestamp.proto
 
+See [README.md](cmd/protodep/README.md) 
 
 ### usage of proto2avro command
 
     proto2avro [filename].proto [message]
 
+### usage of protocompose command
+
+See [README.md](cmd/protocompose/README.md)
 
 ### usage of proto2openapi command
 
-    TODO
-
-See folder `cmd/protodep/README.md` for more details.    
+    WORK in progress
