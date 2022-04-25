@@ -15,10 +15,13 @@ func main() {
 	b := &protoBuilder{
 		registry: make(map[string]*protoReference),
 	}
-	b.loadProto("source.proto")
-	toModify := b.loadProto("target.proto")
+	// quick
+	var last *proto.Proto
+	for _, each := range os.Args[1:] {
+		last = b.loadProto(each)
+	}
 	b.processComposed()
-	fmt.Println(formatted(toModify))
+	fmt.Println(formatted(last))
 }
 
 type protoBuilder struct {
@@ -67,7 +70,6 @@ func (b *protoBuilder) handleMessage(m *proto.Message) {
 		message:      m,
 		composeSpecs: specs,
 	}
-	fmt.Println("adding", key, len(specs))
 }
 
 func (b *protoBuilder) processComposed() {
