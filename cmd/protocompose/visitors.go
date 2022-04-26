@@ -19,3 +19,15 @@ func (r *renumber) VisitMessage(m *proto.Message) {
 		each.Accept(r)
 	}
 }
+
+type fieldcopier struct {
+	proto.NoopVisitor
+	copy *proto.NormalField
+}
+
+func (c *fieldcopier) VisitNormalField(f *proto.NormalField) {
+	field := *f.Field
+	c.copy = &proto.NormalField{
+		Field: &field,
+	}
+}
