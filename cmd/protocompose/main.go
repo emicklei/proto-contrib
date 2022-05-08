@@ -25,6 +25,7 @@ func main() {
 
 func FieldOfMessage(m *proto.Message, fieldName string) proto.Visitee {
 	for _, each := range m.Elements {
+		// TODO other types
 		if f, ok := each.(*proto.NormalField); ok {
 			if f.Name == fieldName {
 				return f
@@ -32,6 +33,16 @@ func FieldOfMessage(m *proto.Message, fieldName string) proto.Visitee {
 		}
 	}
 	return nil
+}
+
+func FieldNamesOfMessage(m *proto.Message) (list []string) {
+	for _, each := range m.Elements {
+		if f, ok := each.(*proto.NormalField); ok {
+			// TODO other types
+			list = append(list, f.Name)
+		}
+	}
+	return
 }
 
 func check(err error) {

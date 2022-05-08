@@ -5,6 +5,8 @@ package protocompose.v1;
 // Composed is a test message
 //
 // @compose somepackage.v2.Source.id
-// @compose somepackage.v2.Source.issue_date
+// @compose somepackage.v2.Source.issue_date_ms
+// @compose ..somepackage.v2.Dimension
+// @compose #somepackage.v2.FileReference
 message Composed {
 }

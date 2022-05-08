@@ -62,9 +62,24 @@ func (b *protoBuilder) processComposed() {
 			// flush all existing
 			v.message.Elements = []proto.Visitee{}
 			// add according to spec
+
 			for _, each := range v.composeSpecs {
-				elem := b.copiedFieldAt(each)
-				v.message.Elements = append(v.message.Elements, elem)
+				if each.inlineFields {
+					// TODO check existing fields to handle future fields
+					v.message.Elements = append(v.message.Elements, b.copiedsFieldsAt(each)...)
+				} else if each.embedMessage {
+					f := &proto.NormalField{
+						Field: &proto.Field{
+							Comment: b.messageAt(each.registryKey).Comment,
+							Name:    fieldNameFromMessage(each.registryKey),
+							Type:    each.registryKey,
+						},
+					}
+					v.message.Elements = append(v.message.Elements, f)
+				} else {
+					elem := b.copiedFieldAt(each)
+					v.message.Elements = append(v.message.Elements, elem)
+				}
 			}
 			// renumber all
 			v.message.Accept(new(renumber))
@@ -72,16 +87,41 @@ func (b *protoBuilder) processComposed() {
 	}
 }
 
+func (b *protoBuilder) messageAt(key string) *proto.Message {
+	msg, ok := b.registry[key]
+	if !ok {
+		check(fmt.Errorf("message not found:[%s]", key))
+	}
+	return msg.message
+}
+
 func (b *protoBuilder) copiedFieldAt(spec composeSpec) proto.Visitee {
 	msg, ok := b.registry[spec.registryKey]
 	if !ok {
-		check(fmt.Errorf("not found:[%s]", spec.registryKey))
+		check(fmt.Errorf("message not found:[%s]", spec.registryKey))
 	}
 	f := FieldOfMessage(msg.message, spec.fieldName)
 	if f == nil {
-		check(fmt.Errorf("not found:[%s]", spec.fieldName))
+		check(fmt.Errorf("field not found:[%s]", spec.fieldName))
 	}
 	copier := new(fieldcopier)
 	f.Accept(copier)
 	return copier.copy
+}
+
+func (b *protoBuilder) copiedsFieldsAt(spec composeSpec) (list []proto.Visitee) {
+	msg, ok := b.registry[spec.registryKey]
+	if !ok {
+		check(fmt.Errorf("message not found:[%s]", spec.registryKey))
+	}
+	for _, each := range FieldNamesOfMessage(msg.message) {
+		list = append(list, b.copiedFieldAt(spec.forFieldName(each)))
+	}
+	return
+}
+
+// somepackage.v2.FileReference
+func fieldNameFromMessage(fullType string) string {
+	name := fullType[strings.LastIndex(fullType, ".")+1:]
+	return strings.ToLower(name)
 }
