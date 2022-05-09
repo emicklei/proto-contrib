@@ -11,12 +11,12 @@ type composeSpec struct {
 
 // pre: commentLine ends with:
 // 1 [package].[type].[field]
-// 2 ..[package].[type]
+// 2 ...[package].[type]
 // 3 #[package].[type]
 func newComposeSpec(commentLine string) composeSpec {
 	lineParts := strings.Split(commentLine, " ")
 	composePath := lineParts[len(lineParts)-1]
-	if strings.HasPrefix(composePath, "..") {
+	if strings.HasPrefix(composePath, "...") {
 		// inline fields
 		fullType := composePath[2:]
 		return composeSpec{

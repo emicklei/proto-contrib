@@ -39,7 +39,7 @@ and the any target file containing an `@compose` annotation:
 ```
 // @compose somepackage.v2.Source.id
 // @compose somepackage.v2.Source.issue_date
-// @compose ..somepackage.v2.Dimension
+// @compose ...somepackage.v2.Dimension
 // @compose #somepackage.v2.FileReference
 message Composed {
 }
