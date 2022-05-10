@@ -34,7 +34,7 @@ message FileReference {
 
 ```
 
-and the any target file containing an `@compose` annotation:
+and the any target file containing `@compose` annotations:
 
 ```
 // @compose somepackage.v2.Source.id
@@ -72,5 +72,6 @@ message Composed {
 ```
 which contains copies of the fields as specified by each annotation.
 
-Existing fields in a composed message are removed.
-Field numbers start at 1 and will follow the order as described.
+Field numbers are preserved which is required for compatibility.
+New field numbers follow the order as described.
+Adding new fields to embedded or inlined messages will cause new field with untaken field numbers.

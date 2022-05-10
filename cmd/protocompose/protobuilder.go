@@ -20,6 +20,12 @@ type protoReference struct {
 	composeSpecs []composeSpec
 }
 
+func newProtoBuilder() *protoBuilder {
+	return &protoBuilder{
+		registry: make(map[string]*protoReference),
+	}
+}
+
 func (b *protoBuilder) loadProto(absFilename string) *proto.Proto {
 	reader, err := os.Open(absFilename)
 	check(err)
@@ -59,10 +65,15 @@ func (b *protoBuilder) handleMessage(m *proto.Message) {
 func (b *protoBuilder) processComposed() {
 	for _, v := range b.registry {
 		if len(v.composeSpecs) > 0 {
-			// flush all existing
-			v.message.Elements = []proto.Visitee{}
-			// add according to spec
+			// remember assigned field numbers
+			assigner := newRenumber()
+			assigner.reading = true
+			v.message.Accept(assigner)
 
+			// flush all
+			v.message.Elements = []proto.Visitee{}
+
+			// add according to spec
 			for _, each := range v.composeSpecs {
 				if each.inlineFields {
 					// TODO check existing fields to handle future fields
@@ -81,8 +92,9 @@ func (b *protoBuilder) processComposed() {
 					v.message.Elements = append(v.message.Elements, elem)
 				}
 			}
-			// renumber all
-			v.message.Accept(new(renumber))
+			// renumber all respecting given numbers
+			assigner.reading = false
+			v.message.Accept(assigner)
 		}
 	}
 }

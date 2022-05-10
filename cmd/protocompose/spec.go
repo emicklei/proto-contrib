@@ -18,7 +18,7 @@ func newComposeSpec(commentLine string) composeSpec {
 	composePath := lineParts[len(lineParts)-1]
 	if strings.HasPrefix(composePath, "...") {
 		// inline fields
-		fullType := composePath[2:]
+		fullType := composePath[3:]
 		return composeSpec{
 			registryKey:  fullType,
 			inlineFields: true,

@@ -6,7 +6,9 @@ package protocompose.v1;
 //
 // @compose somepackage.v2.Source.id
 // @compose somepackage.v2.Source.issue_date_ms
-// @compose ..somepackage.v2.Dimension
+// @compose ...somepackage.v2.Dimension
 // @compose #somepackage.v2.FileReference
 message Composed {
+    // number must stay at 111
+    string id = 111;   
 }

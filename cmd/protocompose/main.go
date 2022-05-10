@@ -11,9 +11,7 @@ import (
 )
 
 func main() {
-	b := &protoBuilder{
-		registry: make(map[string]*protoReference),
-	}
+	b := newProtoBuilder()
 	// quick
 	var last *proto.Proto
 	for _, each := range os.Args[1:] {
