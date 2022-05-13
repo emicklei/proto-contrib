@@ -98,7 +98,7 @@ func (f *Formatter) VisitMessage(m *proto.Message) {
 		f.printAsGroups(m.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n")
+	io.WriteString(f.w, "}\n\n")
 	f.end("message")
 }
 

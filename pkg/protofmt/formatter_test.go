@@ -94,6 +94,7 @@ extend google.protobuf.MessageOptions {
   string field      = 12;
   string no_comment = 13;
 }
+
 `
 	p := newParserOn(src)
 	pp, err := p.Parse()
@@ -163,7 +164,8 @@ message Test {
     // comment 7
     // comment 8
     int64 i = 1; // inline 3
-}	
+}
+	
 /// triple
 `
 	p := newParserOn(proto)
