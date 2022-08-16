@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -27,6 +28,7 @@ func newProtoBuilder() *protoBuilder {
 }
 
 func (b *protoBuilder) loadProto(absFilename string) *proto.Proto {
+	log.Println("loading", absFilename)
 	reader, err := os.Open(absFilename)
 	check(err)
 	defer reader.Close()
@@ -44,6 +46,7 @@ func (b *protoBuilder) handlePackage(p *proto.Package) {
 }
 
 func (b *protoBuilder) handleMessage(m *proto.Message) {
+	log.Println("handling", m.Name)
 	specs := []composeSpec{}
 	if m.Comment != nil {
 		for _, each := range m.Comment.Lines {

@@ -2,7 +2,8 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	"flag"
+	"io"
 	"log"
 	"os"
 
@@ -10,15 +11,23 @@ import (
 	"github.com/emicklei/proto-contrib/pkg/protofmt"
 )
 
+var (
+	oInclude = flag.String("i", "", "proto file to include") // currently just one
+	oProcess = flag.String("p", "", "proto file to process") // currently just one
+	oOutput  = flag.String("o", "output.proto", "proto file to generate")
+)
+
 func main() {
+	flag.Parse()
 	b := newProtoBuilder()
-	// quick
-	var last *proto.Proto
-	for _, each := range os.Args[1:] {
-		last = b.loadProto(each)
-	}
+	b.loadProto(*oInclude)
+	toProcess := b.loadProto(*oProcess)
 	b.processComposed()
-	fmt.Println(formatted(last))
+	log.Println("writing", *oOutput)
+	out, err := os.Create(*oOutput)
+	check(err)
+	defer out.Close()
+	io.WriteString(out, formatted(toProcess))
 }
 
 func FieldOfMessage(m *proto.Message, fieldName string) proto.Visitee {
