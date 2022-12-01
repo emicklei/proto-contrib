@@ -3,10 +3,8 @@ package main
 import "strings"
 
 type composeSpec struct {
-	registryKey  string
-	fieldName    string
-	inlineFields bool
-	embedMessage bool
+	registryKey string
+	fieldName   string
 }
 
 // pre: commentLine ends with:
@@ -14,42 +12,22 @@ type composeSpec struct {
 // 2 ...[package].[type]
 // 3 #[package].[type]
 func newComposeSpec(commentLine string) composeSpec {
-	lineParts := strings.Split(commentLine, " ")
+	trimmed := strings.TrimSpace(commentLine)
+	lineParts := strings.Split(trimmed, " ")
 	composePath := lineParts[len(lineParts)-1]
-	if strings.HasPrefix(composePath, "...") {
-		// inline fields
-		fullType := composePath[3:]
-		return composeSpec{
-			registryKey:  fullType,
-			inlineFields: true,
-			embedMessage: false,
-		}
-	}
-	if strings.HasPrefix(composePath, "#") {
-		// embed message
-		fullType := composePath[1:]
-		return composeSpec{
-			registryKey:  fullType,
-			embedMessage: true,
-		}
-	}
 	// normal field
 	parts := strings.Split(composePath, ".")
 	fullType := strings.Join(parts[0:len(parts)-1], ".")
 	fieldName := parts[len(parts)-1]
 	return composeSpec{
-		registryKey:  fullType,
-		fieldName:    fieldName,
-		inlineFields: false,
-		embedMessage: false,
+		registryKey: fullType,
+		fieldName:   fieldName,
 	}
 }
 
 func (c composeSpec) forFieldName(name string) composeSpec {
 	return composeSpec{
-		registryKey:  c.registryKey,
-		fieldName:    name,
-		inlineFields: false,
-		embedMessage: false,
+		registryKey: c.registryKey,
+		fieldName:   name,
 	}
 }

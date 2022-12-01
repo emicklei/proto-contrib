@@ -1,5 +1,5 @@
 github.com/emicklei/proto v1.9.1/go.mod h1:rn1FgRS/FANiZdD2djyH7TMA9jdRDcYQ9IEN9yvjX0A=
-github.com/emicklei/proto v1.10.0 h1:pDGyFRVV5RvV+nkBK9iy3q67FBy9Xa7vwrOTE+g5aGw=
-github.com/emicklei/proto v1.10.0/go.mod h1:rn1FgRS/FANiZdD2djyH7TMA9jdRDcYQ9IEN9yvjX0A=
-github.com/emicklei/proto-contrib v0.9.4 h1:1XAc09/H+2EDgJwDoWs/R2Hzc3MeTKpg2cKbnbK6uGA=
-github.com/emicklei/proto-contrib v0.9.4/go.mod h1:VIsYc+YKpDE0kcQoDpWYmxp+4h5QubVRyI5fpwtOlV8=
+github.com/emicklei/proto v1.11.1 h1:CBZwNVwPJvkdevxvsoCuFedF9ENiBz0saen3L9y0OTA=
+github.com/emicklei/proto v1.11.1/go.mod h1:rn1FgRS/FANiZdD2djyH7TMA9jdRDcYQ9IEN9yvjX0A=
+github.com/emicklei/proto-contrib v0.12.0 h1:GJPORzc1zJtIg7VDnJteo3FI04lwjKMsYAyNqHf1aqw=
+github.com/emicklei/proto-contrib v0.12.0/go.mod h1:VIsYc+YKpDE0kcQoDpWYmxp+4h5QubVRyI5fpwtOlV8=

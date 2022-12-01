@@ -8,30 +8,23 @@ Given the source file containing:
 ```
 message Source {
     // the identifier
-    string id = 1;    
+    string id = 10;    
 
     // date of issue
-    google.type.Date issue_date = 2;
+    google.type.Date issue_date = 11;
 
     // unused
-    string external_code = 3;
+    string external_code = 12;
 }
 
 // Dimension is for objects that have a size: W x H
 message Dimension {
   // width in pixels
-  int32 width = 1;
+  int32 width = 10;
 
   // height in pixels
-  int32 height = 2;
+  int32 height = 20;
 }
-
-// FileReference represents a store media object
-message FileReference {
-  string file_name = 1;
-  string mime_type = 2;
-}
-
 ```
 
 and the any target file containing `@compose` annotations:
@@ -39,9 +32,10 @@ and the any target file containing `@compose` annotations:
 ```
 // @compose somepackage.v2.Source.id
 // @compose somepackage.v2.Source.issue_date
-// @compose ...somepackage.v2.Dimension
-// @compose #somepackage.v2.FileReference
+// @compose somepackage.v2.Dimension.width
+// @compose somepackage.v2.Dimension.height
 message Composed {
+  // must be empty
 }
 ```
 
@@ -50,8 +44,8 @@ after processing all proto files with `protocompose`, you will get:
 ```
 // @compose somepackage.v2.Source.id
 // @compose somepackage.v2.Source.issue_date
-// @compose ...somepackage.v2.Dimension
-// @compose #somepackage.v2.FileReference
+// @compose somepackage.v2.Dimension.width
+// @compose somepackage.v2.Dimension.height
 message Composed {
   
   // the identifier
@@ -65,13 +59,10 @@ message Composed {
 
   // height in pixels
   int32 height = 4;
-
-  // FileReference represents a store media object
-  somepackage.v2.FileReference filereference = 5;
 }
 ```
 which contains copies of the fields as specified by each annotation.
 
-Field numbers are preserved which is required for compatibility.
-New field numbers follow the order as described.
-Adding new fields to embedded or inlined messages will cause new field with untaken field numbers.
+Field numbers follow the order as described.
+
+Supported fields: Normal and Map.

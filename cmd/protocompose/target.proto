@@ -5,10 +5,8 @@ package protocompose.v1;
 // Composed is a test message
 //
 // @compose somepackage.v2.Source.id
-// @compose somepackage.v2.Source.issue_date_ms
-// @compose ...somepackage.v2.Dimension
-// @compose #somepackage.v2.FileReference
+// @compose somepackage.v2.Source.issue_date_ms         
+// @compose somepackage.v2.Dimension.width
+// @compose somepackage.v2.Dimension.height
 message Composed {
-    // number must stay at 111
-    string id = 111;   
 }

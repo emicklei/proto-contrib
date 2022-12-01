@@ -1,2 +1,2 @@
 test:
-	go install && protocompose source.proto target.proto
+	go install && protocompose -i source.proto -p target.proto

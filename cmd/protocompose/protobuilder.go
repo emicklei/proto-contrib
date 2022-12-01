@@ -52,6 +52,7 @@ func (b *protoBuilder) handleMessage(m *proto.Message) {
 		for _, each := range m.Comment.Lines {
 			if strings.Contains(each, "@compose") {
 				spec := newComposeSpec(each)
+				log.Println("... compose with", spec.fieldName)
 				specs = append(specs, spec)
 			}
 		}
@@ -68,36 +69,16 @@ func (b *protoBuilder) handleMessage(m *proto.Message) {
 func (b *protoBuilder) processComposed() {
 	for _, v := range b.registry {
 		if len(v.composeSpecs) > 0 {
-			// remember assigned field numbers
-			assigner := newRenumber()
-			assigner.reading = true
-			v.message.Accept(assigner)
-
 			// flush all
 			v.message.Elements = []proto.Visitee{}
 
 			// add according to spec
 			for _, each := range v.composeSpecs {
-				if each.inlineFields {
-					// TODO check existing fields to handle future fields
-					v.message.Elements = append(v.message.Elements, b.copiedsFieldsAt(each)...)
-				} else if each.embedMessage {
-					f := &proto.NormalField{
-						Field: &proto.Field{
-							Comment: b.messageAt(each.registryKey).Comment,
-							Name:    fieldNameFromMessage(each.registryKey),
-							Type:    each.registryKey,
-						},
-					}
-					v.message.Elements = append(v.message.Elements, f)
-				} else {
-					elem := b.copiedFieldAt(each)
-					v.message.Elements = append(v.message.Elements, elem)
-				}
+				elem := b.copiedFieldAt(each)
+				v.message.Elements = append(v.message.Elements, elem)
 			}
-			// renumber all respecting given numbers
-			assigner.reading = false
-			v.message.Accept(assigner)
+			// renumber all
+			v.message.Accept(newRenumber())
 		}
 	}
 }
@@ -124,7 +105,7 @@ func (b *protoBuilder) copiedFieldAt(spec composeSpec) proto.Visitee {
 	return copier.copy
 }
 
-func (b *protoBuilder) copiedsFieldsAt(spec composeSpec) (list []proto.Visitee) {
+func (b *protoBuilder) copiedFieldsAt(spec composeSpec) (list []proto.Visitee) {
 	msg, ok := b.registry[spec.registryKey]
 	if !ok {
 		check(fmt.Errorf("message not found:[%s]", spec.registryKey))

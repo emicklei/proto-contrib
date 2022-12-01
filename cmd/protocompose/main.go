@@ -38,6 +38,11 @@ func FieldOfMessage(m *proto.Message, fieldName string) proto.Visitee {
 				return f
 			}
 		}
+		if f, ok := each.(*proto.MapField); ok {
+			if f.Name == fieldName {
+				return f
+			}
+		}
 	}
 	return nil
 }
