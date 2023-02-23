@@ -1,0 +1,5 @@
+- id: protofmt
+  name: protofmt
+  entry: protofmt -w
+  language: golang
+
