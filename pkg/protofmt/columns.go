@@ -204,17 +204,10 @@ func (p *columnsPrinter) VisitRPC(r *proto.RPC) {
 }
 func (p *columnsPrinter) VisitMapField(f *proto.MapField) {
 	p.cols = append(p.cols,
-		alignedEmpty, // no repeated
-		alignedEmpty, // no optional
+		alignedEmpty, // no repeated no optional
 		leftAligned(fmt.Sprintf("map <%s,%s>", f.KeyType, f.Type)),
 		alignedSpace,
 		leftAligned(f.Name),
-		// notAligned("map <"),
-		// rightAligned(f.KeyType),
-		// notAligned(","),
-		// leftAligned(f.Type),
-		// notAligned("> "),
-		// rightAligned(f.Name),
 		alignedEquals,
 		rightAligned(strconv.Itoa(f.Sequence)))
 	if len(f.Options) > 0 {

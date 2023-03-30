@@ -64,7 +64,7 @@ func (f *Formatter) printComment(c *proto.Comment) {
 		}
 	}
 	if c.Cstyle {
-		fmt.Fprintf(f.w, " */")
+		fmt.Fprintf(f.w, "*/\n")
 	}
 }
 

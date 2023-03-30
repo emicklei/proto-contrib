@@ -224,3 +224,31 @@ func TestOptionTrue(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestFormatMaps(t *testing.T) {
+	src := `message A {
+  bool                done  = 1;
+  map <string,string> smap1 = 2;
+  map <string,string> smap2 = 3;
+  
+  // comment
+  map <string,string> smap3 = 4;
+}
+
+`
+	p := newParserOn(src)
+	pp, err := p.Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, ok := pp.Elements[0].(*proto.Message)
+	if !ok {
+		t.Fatal("message expected")
+	}
+	if got, want := formatted(m), src; got != want {
+		fmt.Println(diff(got, want))
+		fmt.Println("<" + got + ">")
+		fmt.Println("<" + want + ">")
+		t.Fail()
+	}
+}
