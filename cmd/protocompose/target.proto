@@ -8,5 +8,6 @@ package protocompose.v1;
 // @compose somepackage.v2.Source.issue_date_ms         
 // @compose somepackage.v2.Dimension.width
 // @compose somepackage.v2.Dimension.height
+// @compose somepackage.v2.Source.colors
 message Composed {
 }

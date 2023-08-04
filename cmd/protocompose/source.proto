@@ -11,6 +11,8 @@ message Source {
 
     // unused
     string external_code = 12;
+
+    repeated string colors = 13;
 }
 
 

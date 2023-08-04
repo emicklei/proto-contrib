@@ -40,7 +40,9 @@ type fieldcopier struct {
 func (c *fieldcopier) VisitNormalField(f *proto.NormalField) {
 	field := *f.Field
 	c.copy = &proto.NormalField{
-		Field: &field,
+		Repeated: f.Repeated,
+		Optional: f.Optional,
+		Field:    &field,
 	}
 }
 
