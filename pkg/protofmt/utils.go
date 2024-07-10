@@ -98,7 +98,7 @@ func (f *Formatter) end(stmt string) {
 func (f *Formatter) indent(diff int) {
 	f.level(diff)
 	for i := 0; i < f.indentLevel; i++ {
-		io.WriteString(f.w, f.indentSeparator)
+		io.WriteString(f.w, f.cfg.indentSeparator)
 	}
 }
 
@@ -133,7 +133,7 @@ func (f *Formatter) printListOfColumns(list []columnsPrintable) {
 			// only print if there is a value
 			if c < len(each) {
 				// using space padding to match the max width
-				io.WriteString(f.w, each[c].formatted(f.indentSeparator, f.indentLevel, pw))
+				io.WriteString(f.w, each[c].formatted(f.cfg.indentSeparator, f.indentLevel, pw))
 			}
 		}
 		f.nl()

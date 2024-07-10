@@ -6,10 +6,10 @@ import (
 	"github.com/emicklei/proto"
 )
 
-/// testing utils
+// / testing utils
 func formatted(v proto.Visitee) string {
 	b := new(bytes.Buffer)
-	f := NewFormatter(b, "  ") // 2 spaces
+	f := NewFormatter(b, WithIndentSeparator("  ")) // 2 spaces
 	v.Accept(f)
 	return b.String()
 }

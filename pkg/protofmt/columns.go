@@ -186,7 +186,7 @@ func (p *columnsPrinter) VisitRPC(r *proto.RPC) {
 	if len(r.Elements) > 0 {
 		buf := new(bytes.Buffer)
 		io.WriteString(buf, " {\n")
-		f := NewFormatter(buf, "  ") // TODO get separator, now 2 spaces
+		f := NewFormatter(buf, WithIndentSeparator("  ")) // TODO get separator, now 2 spaces
 		f.level(1)
 		for _, each := range r.Elements {
 			each.Accept(f)

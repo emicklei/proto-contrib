@@ -57,7 +57,7 @@ func TestPrintListOfColumns(t *testing.T) {
 
 	list := []columnsPrintable{asColumnsPrintable(e0), asColumnsPrintable(e1)}
 	b := new(bytes.Buffer)
-	f := NewFormatter(b, " ")
+	f := NewFormatter(b)
 	f.printListOfColumns(list)
 	formatted := `A   =  1 [a  = 1234];
 ABC = 12 [ab = 1234];
@@ -75,7 +75,7 @@ func TestFormatCStyleComment(t *testing.T) {
 `
 	def, _ := proto.NewParser(strings.NewReader(src)).Parse()
 	b := new(bytes.Buffer)
-	f := NewFormatter(b, " ")
+	f := NewFormatter(b, WithIndentSeparator(" "))
 	f.Format(def)
 	if got, want := formatted(def.Elements[0]), src; got != want {
 		println(diff(got, want))
@@ -177,7 +177,7 @@ message Test {
 		t.Fatalf("got [%v] want [%v]", got, want)
 	}
 	b := new(bytes.Buffer)
-	f := NewFormatter(b, "  ") // 2 spaces
+	f := NewFormatter(b, WithIndentSeparator("  ")) // 2 spaces
 	f.Format(def)
 }
 

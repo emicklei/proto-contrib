@@ -32,16 +32,46 @@ import (
 
 // Formatter visits a Proto and writes formatted source.
 type Formatter struct {
-	w               io.Writer
-	indentSeparator string
-	indentLevel     int
-	lastStmt        string
-	lastLevel       int
+	w           io.Writer
+	cfg         formatConfig
+	indentLevel int
+	lastStmt    string
+	lastLevel   int
+}
+
+type formatConfig struct {
+	indentSeparator      string
+	newlineBeforeComment bool
+}
+
+type FormatOption func(options *formatConfig)
+
+func defaultOptions() *formatConfig {
+	return &formatConfig{
+		indentSeparator:      " ",
+		newlineBeforeComment: true,
+	}
+}
+
+func WithIndentSeparator(sep string) FormatOption {
+	return func(options *formatConfig) {
+		options.indentSeparator = sep
+	}
+}
+
+func WithNewlineBeforeComment(b bool) FormatOption {
+	return func(options *formatConfig) {
+		options.newlineBeforeComment = b
+	}
 }
 
 // NewFormatter returns a new Formatter. Only the indentation separator is configurable.
-func NewFormatter(writer io.Writer, indentSeparator string) *Formatter {
-	return &Formatter{w: writer, indentSeparator: indentSeparator}
+func NewFormatter(writer io.Writer, opts ...FormatOption) *Formatter {
+	cfg := defaultOptions()
+	for _, opt := range opts {
+		opt(cfg)
+	}
+	return &Formatter{w: writer, cfg: *cfg}
 }
 
 // Format visits all proto elements and writes formatted source.
@@ -53,7 +83,9 @@ func (f *Formatter) Format(p *proto.Proto) {
 
 // VisitComment formats a Comment and writes enclosing newlines.
 func (f *Formatter) VisitComment(c *proto.Comment) {
-	f.nl()
+	if f.cfg.newlineBeforeComment {
+		f.nl()
+	}
 	f.printComment(c)
 }
 
