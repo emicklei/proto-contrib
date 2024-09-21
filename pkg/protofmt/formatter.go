@@ -78,7 +78,7 @@ func (f *Formatter) VisitEnumField(e *proto.EnumField) {
 
 // VisitImport formats a Import.
 func (f *Formatter) VisitImport(i *proto.Import) {
-	f.beginNoDoc("import", i)
+	f.beginNoDoc("import")
 	f.printAsGroups([]proto.Visitee{i})
 	f.end("import")
 }

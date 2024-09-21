@@ -6,7 +6,7 @@ import (
 	"github.com/emicklei/proto"
 )
 
-/// testing utils
+// / testing utils
 func formatted(v proto.Visitee) string {
 	b := new(bytes.Buffer)
 	f := NewFormatter(b, "  ") // 2 spaces
@@ -17,10 +17,13 @@ func formatted(v proto.Visitee) string {
 func diff(left, right string) string {
 	b := new(bytes.Buffer)
 	w := func(char rune) {
+		//lint:ignore ST1017 i like
 		if '\n' == char {
 			b.WriteString("(n)")
+			//lint:ignore ST1017 i like
 		} else if '\t' == char {
 			b.WriteString("(t)")
+			//lint:ignore ST1017 i like
 		} else if ' ' == char {
 			b.WriteString("(.)")
 		} else {

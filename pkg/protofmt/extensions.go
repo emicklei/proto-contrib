@@ -38,8 +38,11 @@ func typeAssertColumnsPrintable(v proto.Visitee) (columnsPrintable, bool) {
 
 func columnsPrintablesFromMap(m proto.LiteralMap) (cols []aligned) {
 	cols = append(cols, leftAligned("{"), alignedSpace)
-	for _, each := range m {
+	for i, each := range m {
 		// TODO only works for simple constants
+		if i > 0 {
+			cols = append(cols, alignedSpace)
+		}
 		cols = append(cols, leftAligned(each.Name), alignedColon, leftAligned(each.SourceRepresentation()))
 	}
 	cols = append(cols, alignedSpace, leftAligned("}"))
