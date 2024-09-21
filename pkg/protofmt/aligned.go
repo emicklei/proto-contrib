@@ -23,8 +23,10 @@
 
 package protofmt
 
-import "strings"
-import "bytes"
+import (
+	"bytes"
+	"strings"
+)
 
 type aligned struct {
 	source  string
@@ -33,13 +35,12 @@ type aligned struct {
 }
 
 var (
-	alignedEquals      = leftAligned(" = ")
-	alignedShortEquals = leftAligned("=")
-	alignedSpace       = leftAligned(" ")
-	alignedComma       = leftAligned(", ")
-	alignedEmpty       = leftAligned("")
-	alignedSemicolon   = notAligned(";")
-	alignedColon       = notAligned(":")
+	alignedEquals    = leftAligned(" = ")
+	alignedSpace     = leftAligned(" ")
+	alignedComma     = leftAligned(", ")
+	alignedEmpty     = leftAligned("")
+	alignedSemicolon = notAligned(";")
+	alignedColon     = notAligned(":")
 )
 
 func leftAligned(src string) aligned  { return aligned{src, true, true} }
@@ -59,7 +60,7 @@ func (a aligned) formatted(indentSeparator string, indentLevel, width int) strin
 		buf := new(bytes.Buffer)
 		for _, each := range a.source {
 			buf.WriteRune(each)
-			if '\n' == each {
+			if each == '\n' {
 				buf.WriteString(strings.Repeat(indentSeparator, indentLevel))
 			}
 		}
