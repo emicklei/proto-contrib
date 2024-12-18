@@ -46,6 +46,15 @@ func NewFormatter(writer io.Writer, indentSeparator string) *Formatter {
 
 // Format visits all proto elements and writes formatted source.
 func (f *Formatter) Format(p *proto.Proto) {
+	// check for Edition
+	if len(p.Elements) > 0 {
+		if e, ok := p.Elements[0].(*proto.Edition); ok {
+			f.begin("edition", e)
+			// inline doc is lost TODO
+			fmt.Fprintf(f.w, "edition = \"%s\";\n", e.Value)
+			f.end("edition")
+		}
+	}
 	for _, each := range p.Elements {
 		each.Accept(f)
 	}
