@@ -146,7 +146,8 @@ func (f *Formatter) formatLiteral(l *proto.Literal) {
 // VisitPackage formats a Package.
 func (f *Formatter) VisitPackage(p *proto.Package) {
 	f.begin("package", p)
-	f.printAsGroups([]proto.Visitee{p})
+	fmt.Fprintf(f.w, "package %s", p.Name)
+	f.endWithComment(p.InlineComment)
 	f.end("package")
 }
 
