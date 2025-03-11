@@ -124,6 +124,7 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
   
   }
 }
+
 `
 	p := newParserOn(src)
 	def, err := p.Parse()
@@ -186,16 +187,18 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 	src := `service X {
   rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option simple = "easy";
-
+  
     option (google.api.http) = {
       get: "/hello"
       additional_bindings: {
         get: "/hello/world"
       }
     };
-
+  
   }
-}`
+}
+
+`
 	p := newParserOn(src)
 	def, err := p.Parse()
 	if err != nil {
@@ -207,7 +210,7 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 		fmt.Println(got)
 		fmt.Println("--- want")
 		fmt.Println(want)
-		//t.Fail()
+		t.Fail()
 	}
 }
 
@@ -246,6 +249,74 @@ func TestFormatMaps(t *testing.T) {
 		t.Fatal("message expected")
 	}
 	if got, want := formatted(m), src; got != want {
+		fmt.Println(diff(got, want))
+		fmt.Println("<" + got + ">")
+		fmt.Println("<" + want + ">")
+		t.Fail()
+	}
+}
+
+func TestOptionWithArrayField(t *testing.T) {
+	src := `option my_option = {
+  def: "fgh"
+  params: [
+    {
+      foo: "bar"
+      baz: "biz"
+    },
+    {
+      abc: "xyz"
+    }
+  ]
+};
+`
+	p := newParserOn(src)
+	pp, err := p.Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, ok := pp.Elements[0].(*proto.Option)
+	if !ok {
+		t.Fatal("option expected")
+	}
+	if got, want := formatted(m), src; got != want {
+		fmt.Println(diff(got, want))
+		fmt.Println("<" + got + ">")
+		fmt.Println("<" + want + ">")
+		t.Fail()
+	}
+}
+
+func TestNewLines(t *testing.T) {
+	src := `syntax = "1";
+
+package v1;
+
+import "i1";
+import "i2";
+
+option v1 = "1";
+option v2 = "2";
+
+enum E1 {}
+
+
+message M1 {}
+
+message M2 {}
+
+
+service S1 {}
+
+service S2 {}
+
+`
+	p := newParserOn(src)
+	pp, err := p.Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := formatted(pp), src; got != want {
 		fmt.Println(diff(got, want))
 		fmt.Println("<" + got + ">")
 		fmt.Println("<" + want + ">")

@@ -38,7 +38,6 @@ func TestOpenWithMap(t *testing.T) {
 	o.Constant.OrderedMap = append(o.Constant.OrderedMap, add)
 
 	got := formatted(o)
-	fmt.Println(got)
 
 	want := `option (google.api.http) = {
   get: "/hello"

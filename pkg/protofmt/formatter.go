@@ -62,7 +62,6 @@ func (f *Formatter) Format(p *proto.Proto) {
 
 // VisitComment formats a Comment and writes enclosing newlines.
 func (f *Formatter) VisitComment(c *proto.Comment) {
-	f.nl()
 	f.printComment(c)
 }
 
@@ -76,7 +75,7 @@ func (f *Formatter) VisitEnum(e *proto.Enum) {
 		f.printAsGroups(e.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n")
+	io.WriteString(f.w, "}\n\n")
 	f.end("enum")
 }
 
@@ -87,7 +86,7 @@ func (f *Formatter) VisitEnumField(e *proto.EnumField) {
 
 // VisitImport formats a Import.
 func (f *Formatter) VisitImport(i *proto.Import) {
-	f.beginNoDoc("import")
+	f.begin("import", i)
 	f.printAsGroups([]proto.Visitee{i})
 	f.end("import")
 }
@@ -128,19 +127,35 @@ func (f *Formatter) formatLiteral(l *proto.Literal) {
 		fmt.Fprintf(f.w, "%s", l.SourceRepresentation())
 		return
 	}
-	fmt.Fprintf(f.w, "{\n")
-	for _, other := range l.OrderedMap {
-		f.indent(1)
-		fmt.Fprintf(f.w, "%s", other.Name)
-		if other.PrintsColon {
-			fmt.Fprintf(f.w, ": ")
+	if len(l.OrderedMap) > 0 {
+		fmt.Fprintf(f.w, "{\n")
+		for _, other := range l.OrderedMap {
+			f.indent(1)
+			fmt.Fprintf(f.w, "%s", other.Name)
+			if other.PrintsColon {
+				fmt.Fprintf(f.w, ": ")
+			}
+			f.formatLiteral(other.Literal)
+			f.level(-1)
+			f.nl()
 		}
-		f.formatLiteral(other.Literal)
-		f.level(-1)
-		f.nl()
+		f.indent(0)
+		fmt.Fprintf(f.w, "}")
 	}
-	f.indent(0)
-	fmt.Fprintf(f.w, "}")
+	if len(l.Array) > 0 {
+		fmt.Fprintf(f.w, "[\n")
+		for i, other := range l.Array {
+			f.indent(1)
+			f.formatLiteral(other)
+			if i < len(l.Array)-1 {
+				fmt.Fprintf(f.w, ",")
+			}
+			f.level(-1)
+			f.nl()
+		}
+		f.indent(0)
+		fmt.Fprintf(f.w, "]")
+	}
 }
 
 // VisitPackage formats a Package.
@@ -161,7 +176,7 @@ func (f *Formatter) VisitService(s *proto.Service) {
 		f.printAsGroups(s.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n")
+	io.WriteString(f.w, "}\n\n")
 	f.end("service")
 }
 
