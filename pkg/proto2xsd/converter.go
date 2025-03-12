@@ -43,7 +43,7 @@ func Convert(filename, xsdNamespace string, input io.Reader, output io.Writer) e
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(output, xml.Header)
+	fmt.Fprint(output, xml.Header)
 	elements, err := buildXSDElements(def)
 	if err != nil {
 		return err
