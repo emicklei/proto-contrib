@@ -10,7 +10,11 @@ import (
 func formatted(v proto.Visitee) string {
 	b := new(bytes.Buffer)
 	f := NewFormatter(b, "  ") // 2 spaces
-	v.Accept(f)
+	if p, ok := v.(*proto.Proto); ok {
+		f.Format(p)
+	} else {
+		v.Accept(f)
+	}
 	return b.String()
 }
 

@@ -94,7 +94,6 @@ extend google.protobuf.MessageOptions {
   string field      = 12;
   string no_comment = 13;
 }
-
 `
 	p := newParserOn(src)
 	pp, err := p.Parse()
@@ -121,10 +120,8 @@ func TestFormatAggregatedOptionSyntax(t *testing.T) {
       post: "/v1/finders/1"
       body: "*"
     };
-  
   }
 }
-
 `
 	p := newParserOn(src)
 	def, err := p.Parse()
@@ -187,17 +184,14 @@ func TestOptionWithStructureAndTwoFields(t *testing.T) {
 	src := `service X {
   rpc Hello (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option simple = "easy";
-  
     option (google.api.http) = {
       get: "/hello"
       additional_bindings: {
         get: "/hello/world"
       }
     };
-  
   }
 }
-
 `
 	p := newParserOn(src)
 	def, err := p.Parse()
@@ -237,7 +231,6 @@ func TestFormatMaps(t *testing.T) {
   // comment
   map <string,string> smap3 = 4;
 }
-
 `
 	p := newParserOn(src)
 	pp, err := p.Parse()
@@ -331,6 +324,17 @@ func TestOptionEmptyBody(t *testing.T) {
 
 func TestNewLines(t *testing.T) {
 	src := `syntax = "1";
+package v1;
+import "i1";
+import "i2";
+option v1 = "1";
+option v2 = "2";
+enum E1 {}
+message M1 {}
+message M2 {}
+service S1 {}
+service S2 {}`
+	expected := `syntax = "1";
 
 package v1;
 
@@ -342,23 +346,21 @@ option v2 = "2";
 
 enum E1 {}
 
-
 message M1 {}
 
 message M2 {}
 
-
 service S1 {}
 
 service S2 {}
-
 `
+
 	p := newParserOn(src)
 	pp, err := p.Parse()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, want := formatted(pp), src; got != want {
+	if got, want := formatted(pp), expected; got != want {
 		fmt.Println(diff(got, want))
 		fmt.Println("<" + got + ">")
 		fmt.Println("<" + want + ">")

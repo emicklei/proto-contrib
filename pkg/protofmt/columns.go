@@ -190,7 +190,6 @@ func (p *columnsPrinter) VisitRPC(r *proto.RPC) {
 		f.level(1)
 		for _, each := range r.Elements {
 			each.Accept(f)
-			io.WriteString(buf, "\n")
 		}
 		f.indent(-1)
 		io.WriteString(buf, "}")

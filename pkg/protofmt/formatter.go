@@ -55,7 +55,17 @@ func (f *Formatter) Format(p *proto.Proto) {
 			f.end("edition")
 		}
 	}
-	for _, each := range p.Elements {
+	for i, each := range p.Elements {
+		if i > 0 {
+			// group options and imports together
+			if _, ok1 := each.(*proto.Option); ok1 && f.lastStmt == "option" {
+				// no newline
+			} else if _, ok1 := each.(*proto.Import); ok1 && f.lastStmt == "import" {
+				// no newline
+			} else {
+				f.nl()
+			}
+		}
 		each.Accept(f)
 	}
 }
@@ -75,7 +85,7 @@ func (f *Formatter) VisitEnum(e *proto.Enum) {
 		f.printAsGroups(e.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n\n")
+	io.WriteString(f.w, "}\n")
 	f.end("enum")
 }
 
@@ -106,7 +116,7 @@ func (f *Formatter) VisitMessage(m *proto.Message) {
 		f.printAsGroups(m.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n\n")
+	io.WriteString(f.w, "}\n")
 	f.end("message")
 }
 
@@ -124,7 +134,7 @@ func (f *Formatter) VisitOption(o *proto.Option) {
 
 func (f *Formatter) formatLiteral(l *proto.Literal) {
 	if len(l.OrderedMap) == 0 && len(l.Array) == 0 && len(l.Source) == 0 {
-		if (l.IsString) {
+		if l.IsString {
 			fmt.Fprintf(f.w, "\"\"")
 		} else {
 			fmt.Fprintf(f.w, "{}")
@@ -184,7 +194,7 @@ func (f *Formatter) VisitService(s *proto.Service) {
 		f.printAsGroups(s.Elements)
 		f.indent(-1)
 	}
-	io.WriteString(f.w, "}\n\n")
+	io.WriteString(f.w, "}\n")
 	f.end("service")
 }
 
