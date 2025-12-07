@@ -83,6 +83,35 @@ func TestFormatCStyleComment(t *testing.T) {
 	}
 }
 
+func TestUnattachedComment(t *testing.T) {
+	t.Skip()
+	src := `// unattached comment
+
+// attached comment
+message A {}
+
+// another unattached comment
+
+message B {
+    // inside comment
+
+    // field comment
+    int32 id = 1;
+}
+
+// yet another unattached comment
+`
+	def, _ := proto.NewParser(strings.NewReader(src)).Parse()
+	b := new(bytes.Buffer)
+	f := NewFormatter(b, " ")
+	f.Format(def)
+	if got, want := b.String(), src; got != want {
+		println(diff(got, want))
+		t.Fail()
+	}
+	print(b.String())
+}
+
 func TestFormatExtendMessage(t *testing.T) {
 	src := `// extend
 extend google.protobuf.MessageOptions {

@@ -125,10 +125,11 @@ func (f *Formatter) VisitOption(o *proto.Option) {
 	f.begin("option", o)
 	fmt.Fprintf(f.w, "option %s = ", o.Name)
 	f.formatLiteral(&o.Constant)
-	fmt.Fprintf(f.w, ";\n")
+	fmt.Fprintf(f.w, ";")
 	if o.InlineComment != nil {
 		fmt.Fprintf(f.w, " //%s", o.InlineComment.Message())
 	}
+	f.nl()
 	f.end("option")
 }
 
