@@ -84,7 +84,7 @@ func TestFormatCStyleComment(t *testing.T) {
 }
 
 func TestUnattachedComment(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 	src := `// unattached comment
 
 // attached comment
@@ -93,32 +93,31 @@ message A {}
 // another unattached comment
 
 message B {
-    // inside comment
+ // inside comment
 
-    // field comment
-    int32 id = 1;
+ // field comment
+ int32 id = 1;
 }
 
 // yet another unattached comment
 `
 	def, _ := proto.NewParser(strings.NewReader(src)).Parse()
 	b := new(bytes.Buffer)
-	f := NewFormatter(b, " ")
+	f := NewFormatter(b, " ") // one space
 	f.Format(def)
 	if got, want := b.String(), src; got != want {
 		println(diff(got, want))
 		t.Fail()
 	}
-	print(b.String())
 }
 
 func TestFormatExtendMessage(t *testing.T) {
 	src := `// extend
 extend google.protobuf.MessageOptions {
-  
+
   // my_option
   optional string my_option = 51234; // mynumber
-  
+
   // other
   string field      = 12;
   string no_comment = 13;
@@ -256,7 +255,7 @@ func TestFormatMaps(t *testing.T) {
   bool                done  = 1;
   map <string,string> smap1 = 2;
   map <string,string> smap2 = 3;
-  
+
   // comment
   map <string,string> smap3 = 4;
 }
